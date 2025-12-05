@@ -1,17 +1,18 @@
-// Инициализация MongoDB для системы тестирования
+// database/mongo-init.js
 db = db.getSiblingDB('test_system');
 
-// Создаем коллекцию users с валидацией
+// Создаем коллекцию пользователей
 db.createCollection('users', {
   validator: {
     $jsonSchema: {
       bsonType: "object",
-      required: ["email", "fullName", "roles", "createdAt", "updatedAt"],
+      required: ["email", "fullName", "createdAt"],
       properties: {
+        _id: { bsonType: "objectId" },
         email: {
           bsonType: "string",
           pattern: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
-          description: "Email пользователя (уникальный)"
+          description: "Валидный email адрес"
         },
         fullName: {
           bsonType: "string",
@@ -25,130 +26,112 @@ db.createCollection('users', {
             bsonType: "string",
             enum: ["student", "teacher", "admin"]
           },
-          minItems: 1,
-          description: "Роли пользователя в системе"
-        }
+          default: ["student"],
+          description: "Роли пользователя"
+        },
+        refreshTokens: {
+          bsonType: "array",
+          items: { bsonType: "string" },
+          default: [],
+          description: "Refresh tokens для выхода на всех устройствах"
+        },
+        isBlocked: {
+          bsonType: "bool",
+          default: false,
+          description: "Заблокирован ли пользователь"
+        },
+        externalAuth: {
+          bsonType: "object",
+          properties: {
+            github: {
+              bsonType: "object",
+              properties: {
+                id: { bsonType: "string" },
+                username: { bsonType: "string" },
+                avatarUrl: { bsonType: "string" }
+              }
+            },
+            yandex: {
+              bsonType: "object",
+              properties: {
+                id: { bsonType: "string" },
+                login: { bsonType: "string" },
+                avatarUrl: { bsonType: "string" }
+              }
+            }
+          },
+          description: "Данные внешней аутентификации"
+        },
+        createdAt: { bsonType: "date" },
+        updatedAt: { bsonType: "date" }
       }
     }
   }
 });
 
 // Создаем индексы
-db.users.createIndex({ "email": 1 }, { unique: true, name: "email_unique" });
-db.users.createIndex({ "roles": 1 }, { name: "roles_index" });
-db.users.createIndex({ "createdAt": -1 }, { name: "createdAt_desc" });
+db.users.createIndex({ email: 1 }, { unique: true, name: "email_unique" });
+db.users.createIndex({ roles: 1 }, { name: "roles_index" });
+db.users.createIndex({ "externalAuth.github.id": 1 }, { sparse: true, name: "github_id_index" });
+db.users.createIndex({ "externalAuth.yandex.id": 1 }, { sparse: true, name: "yandex_id_index" });
 
-// Создаем начальных пользователей
-const users = [
+// Коллекция для login tokens
+db.createCollection('login_tokens', {
+  timeseries: {
+    timeField: 'createdAt',
+    metaField: 'token',
+    granularity: 'seconds'
+  },
+  expireAfterSeconds: 300 // Автоматическое удаление через 5 минут
+});
+
+db.login_tokens.createIndex({ token: 1 }, { unique: true, name: "token_unique" });
+db.login_tokens.createIndex({ createdAt: 1 }, { name: "created_at_ttl", expireAfterSeconds: 300 });
+
+// Коллекция для OAuth state
+db.createCollection('oauth_states', {
+  timeseries: {
+    timeField: 'createdAt',
+    metaField: 'state',
+    granularity: 'seconds'
+  },
+  expireAfterSeconds: 300
+});
+
+db.oauth_states.createIndex({ state: 1 }, { unique: true, name: "state_unique" });
+
+// Создаем тестовых пользователей
+db.users.insertMany([
   {
-    email: "student@example.com",
-    fullName: "Иван Студентов",
-    roles: ["student"],
+    _id: ObjectId("111111111111111111111111"),
+    email: "admin@test.com",
+    fullName: "Администратор",
+    roles: ["admin"],
+    refreshTokens: [],
     isBlocked: false,
     createdAt: new Date(),
-    updatedAt: new Date(),
-    lastLogin: new Date()
+    updatedAt: new Date()
   },
   {
-    email: "teacher@example.com",
-    fullName: "Петр Преподавателев",
+    _id: ObjectId("222222222222222222222222"),
+    email: "teacher@test.com",
+    fullName: "Преподаватель",
     roles: ["teacher"],
+    refreshTokens: [],
     isBlocked: false,
     createdAt: new Date(),
-    updatedAt: new Date(),
-    lastLogin: new Date()
+    updatedAt: new Date()
   },
   {
-    email: "admin@example.com",
-    fullName: "Админ Админов",
-    roles: ["admin", "teacher"],
+    _id: ObjectId("333333333333333333333333"),
+    email: "student@test.com",
+    fullName: "Студент",
+    roles: ["student"],
+    refreshTokens: [],
     isBlocked: false,
     createdAt: new Date(),
-    updatedAt: new Date(),
-    lastLogin: new Date()
+    updatedAt: new Date()
   }
-];
+]);
 
-// Вставляем пользователей (если их еще нет)
-users.forEach(user => {
-  db.users.updateOne(
-    { email: user.email },
-    { $setOnInsert: user },
-    { upsert: true }
-  );
-});
-
-print("✅ MongoDB инициализирована успешно!");
-
-
-db.createCollection('sessions', {
-  validator: {
-    $jsonSchema: {
-      bsonType: "object",
-      required: ["sessionToken", "userId", "status", "createdAt"],
-      properties: {
-        sessionToken: {
-          bsonType: "string",
-          description: "Токен сессии (уникальный)"
-        },
-        userId: {
-          bsonType: "string",
-          description: "ID пользователя (может быть null для анонимных)"
-        },
-        chatId: {
-          bsonType: "string",
-          description: "Chat ID для Telegram (уникальный для Telegram сессий)"
-        },
-        status: {
-          bsonType: "string",
-          enum: ["anonymous", "authorized"],
-          description: "Статус сессии"
-        },
-        loginToken: {
-          bsonType: "string",
-          description: "Токен для входа (для анонимных сессий)"
-        },
-        accessToken: {
-          bsonType: "string",
-          description: "JWT access token"
-        },
-        refreshToken: {
-          bsonType: "string",
-          description: "JWT refresh token"
-        },
-        userAgent: {
-          bsonType: "string",
-          description: "User-Agent браузера"
-        },
-        ipAddress: {
-          bsonType: "string",
-          description: "IP адрес клиента"
-        },
-        lastActivity: {
-          bsonType: "date",
-          description: "Время последней активности"
-        },
-        expiresAt: {
-          bsonType: "date",
-          description: "Время истечения сессии"
-        },
-        createdAt: {
-          bsonType: "date",
-          description: "Время создания сессии"
-        },
-        updatedAt: {
-          bsonType: "date",
-          description: "Время обновления сессии"
-        }
-      }
-    }
-  }
-});
-
-// Индексы для sessions
-db.sessions.createIndex({ "sessionToken": 1 }, { unique: true, name: "sessionToken_unique" });
-db.sessions.createIndex({ "userId": 1 }, { name: "userId_index" });
-db.sessions.createIndex({ "chatId": 1 }, { unique: true, sparse: true, name: "chatId_unique" });
-db.sessions.createIndex({ "status": 1 }, { name: "status_index" });
-db.sessions.createIndex({ "expiresAt": 1 }, { expireAfterSeconds: 0, name: "expiresAt_ttl" });
-db.sessions.createIndex({ "lastActivity": 1 }, { name: "lastActivity_index" });
+print("MongoDB инициализирован успешно!");
