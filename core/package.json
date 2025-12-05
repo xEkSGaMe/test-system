@@ -1,0 +1,7 @@
+{
+  "name": "core-service",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "echo 'Core service placeholder' && tail -f /dev/null"
+  }
+}
