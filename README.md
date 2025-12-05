@@ -1,40 +1,40 @@
 <div align="center">
 
-# ?? Система тестирования  
-### Веб-клиент + Telegram бот
+# РЎРёСЃС‚РµРјР° С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ  
+### Р’РµР±-РєР»РёРµРЅС‚ + Telegram Р±РѕС‚
 
-![Status](https://img.shields.io/badge/??-В_разработке-orange)
-![Team](https://img.shields.io/badge/??-Команда:4_участника-blue)
-![Day](https://img.shields.io/badge/??-День_1_из_10-green)
-![Issues](https://img.shields.io/github/issues/USERNAME/REPO-NAME)
-![Commits](https://img.shields.io/github/last-commit/USERNAME/REPO-NAME)
+![Status](https://img.shields.io/badge/рџљЂ-Р’_СЂР°Р·СЂР°Р±РѕС‚РєРµ-orange)
+![Team](https://img.shields.io/badge/рџ‘Ґ-РљРѕРјР°РЅРґР°:5_СѓС‡Р°СЃС‚РЅРёРєРѕРІ-blue)
+![Day](https://img.shields.io/badge/рџ“…-Р”РµРЅСЊ_1_РёР·_10-green)
+![Issues](https://img.shields.io/github/issues/xEkSGaMe/test-system)
+![Last Commit](https://img.shields.io/github/last-commit/xEkSGaMe/test-system)
 
-[Модули](#-распределение-по-модулям) • [Команда](#-команда) • [Прогресс](#-прогресс) • [Запуск](#-быстрый-запуск)
+[РњРѕРґСѓР»Рё](#-СЂР°СЃРїСЂРµРґРµР»РµРЅРёРµ-РїРѕ-РјРѕРґСѓР»СЏРј) вЂў [РљРѕРјР°РЅРґР°](#-РєРѕРјР°РЅРґР°) вЂў [РџСЂРѕРіСЂРµСЃСЃ](#-РїСЂРѕРіСЂРµСЃСЃ) вЂў [Р—Р°РїСѓСЃРє](#-Р±С‹СЃС‚СЂС‹Р№-Р·Р°РїСѓСЃРє)
 
 </div>
 
-## ?? Распределение по модулям
+## рџ“¦ Р Р°СЃРїСЂРµРґРµР»РµРЅРёРµ РїРѕ РјРѕРґСѓР»СЏРј
 
-| Модуль | Технологии | Ответственный | Статус | Прогресс |
+| РњРѕРґСѓР»СЊ | РўРµС…РЅРѕР»РѕРіРёРё | РћС‚РІРµС‚СЃС‚РІРµРЅРЅС‹Р№ | РЎС‚Р°С‚СѓСЃ | РџСЂРѕРіСЂРµСЃСЃ |
 |--------|------------|---------------|--------|----------|
-| **?? Инфраструктура и БД** | Docker, Git, CI/CD, PostgreSQL, MongoDB | ?? Никита | ? Завершён | ---------- 100% |
-| **?? Авторизация** | Go, JWT, OAuth2 | ?? Иван К. | ?? В разработке | ---------- 30% |
-| **?? Веб-клиент** | React, TypeScript | ?? Иван С. | ?? Планирование | ---------- 0% |
-| **?? Telegram бот** | Python, aiogram | ?? Артем | ?? Планирование | ---------- 0% |
-| **??? C++** | | ??? Меджит | ?? Планирование | ---------- 0% |
+| **рџђі РРЅС„СЂР°СЃС‚СЂСѓРєС‚СѓСЂР° Рё Р‘Р”** | Docker, Git, CI/CD, PostgreSQL, MongoDB | РќРёРєРёС‚Р° | вњ… Р—Р°РІРµСЂС€С‘РЅ | в–€в–€в–€в–€в–€в–€в–€в–€в–€в–€ 100% |
+| **рџ”ђ РђРІС‚РѕСЂРёР·Р°С†РёСЏ** | Go, JWT, OAuth2 | РРІР°РЅ Рљ. | рџ”„ Р’ СЂР°Р·СЂР°Р±РѕС‚РєРµ | в–€в–€в–€в–‘в–‘в–‘в–‘в–‘в–‘в–‘ 30% |
+| **рџЊђ Р’РµР±-РєР»РёРµРЅС‚** | React, TypeScript | РРІР°РЅ РЎ. | рџ“‹ РџР»Р°РЅРёСЂРѕРІР°РЅРёРµ | в–‘в–‘в–‘в–‘в–‘в–‘в–‘в–‘в–‘в–‘ 0% |
+| **рџ¤– Telegram Р±РѕС‚** | Python, aiogram | РђСЂС‚РµРј | рџ“‹ РџР»Р°РЅРёСЂРѕРІР°РЅРёРµ | в–‘в–‘в–‘в–‘в–‘в–‘в–‘в–‘в–‘в–‘ 0% |
+| **вљ™пёЏ C++ РњРѕРґСѓР»СЊ** | C++, Р°Р»РіРѕСЂРёС‚РјС‹, РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЊРЅРѕСЃС‚СЊ | РњРµРґР¶РёС‚ | рџ“‹ РџР»Р°РЅРёСЂРѕРІР°РЅРёРµ | в–‘в–‘в–‘в–‘в–‘в–‘в–‘в–‘в–‘в–‘ 0% |
 
-**[Все задачи >](https://github.com/xEkSGaMe/test-system/issues)**
+**[Р’СЃРµ Р·Р°РґР°С‡Рё в†’](https://github.com/xEkSGaMe/test-system/issues)**
 
-## ?? Команда
+## рџ‘Ґ РљРѕРјР°РЅРґР°
 
 <div align="center">
 
-| ![Backend](https://img.shields.io/badge/Backend-Иван_Петров-4A90E2) | ![Frontend](https://img.shields.io/badge/Frontend-Анна_Сидорова-7B68EE) | ![Bot](https://img.shields.io/badge/Bot_Dev-Алексей_Ботов-32CD32) | ![Database](https://img.shields.io/badge/Database-Мария_Иванова-FF6347) |
-|:---:|:---:|:---:|:---:|
-| Go, Docker, PostgreSQL | React, TypeScript | Python, aiogram | SQL, MongoDB, Redis |
+| ![Backend](https://img.shields.io/badge/Backend-РќРёРєРёС‚Р°_Рџ.-4A90E2) | ![Auth](https://img.shields.io/badge/Auth-РРІР°РЅ_Рљ.-00ADD8) | ![Frontend](https://img.shields.io/badge/Frontend-РРІР°РЅ_РЎ.-61DAFB) | ![Bot](https://img.shields.io/badge/Bot-РђСЂС‚РµРј_Рџ.-32CD32) | ![C++](https://img.shields.io/badge/C++-РњРµРґР¶РёС‚_Рђ.-00599C) |
+|:---:|:---:|:---:|:---:|:---:|
+| Docker, PostgreSQL, MongoDB | Go, JWT, OAuth2 | React, TypeScript | Python, aiogram | C++, Р°Р»РіРѕСЂРёС‚РјС‹ |
 
 </div>
 
-## ?? Прогресс
+## рџ“Љ РџСЂРѕРіСЂРµСЃСЃ
 
-### ?? По дням (10 дней разработки):
+### рџ“… РџРѕ РґРЅСЏРј (10 РґРЅРµР№ СЂР°Р·СЂР°Р±РѕС‚РєРё):
