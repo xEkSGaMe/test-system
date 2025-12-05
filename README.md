@@ -9,7 +9,7 @@
 ![Issues](https://img.shields.io/github/issues/xEkSGaMe/test-system)
 ![Last Commit](https://img.shields.io/github/last-commit/xEkSGaMe/test-system)
 
-[Модули](#-распределение-по-модулям) • [Команда](#-команда) • [Прогресс](#-прогресс) • [Запуск](#-быстрый-запуск)
+[Модули](#-распределение-по-модулям) • [Команда](#-команда) • [Прогресс](#-прогресс-проекта) • [Запуск](#-быстрый-запуск)
 
 </div>
 
