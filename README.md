@@ -29,12 +29,17 @@
 
 <div align="center">
 
-| ![Backend](https://img.shields.io/badge/Backend-Никита_П.-4A90E2) | ![Auth](https://img.shields.io/badge/Auth-Иван_К.-00ADD8) | ![Frontend](https://img.shields.io/badge/Frontend-Иван_С.-61DAFB) | ![Bot](https://img.shields.io/badge/Bot-Артем_П.-32CD32) | ![C++](https://img.shields.io/badge/C++-Меджит_А.-00599C) |
+| ![Backend](https://img.shields.io/badge/Infrastructure-Никита_П.-4A90E2) | ![Auth](https://img.shields.io/badge/Auth-Иван_К.-00ADD8) | ![Frontend](https://img.shields.io/badge/Frontend-Иван_С.-61DAFB) | ![Bot](https://img.shields.io/badge/Bot-Артем_П.-32CD32) | ![C++](https://img.shields.io/badge/C++-Меджит_А.-00599C) |
 |:---:|:---:|:---:|:---:|:---:|
 | Docker, PostgreSQL, MongoDB | Go, JWT, OAuth2 | React, TypeScript | Python, aiogram | C++, алгоритмы |
 
 </div>
 
-## 📊 Прогресс
+## 📊 Прогресс проекта
 
-### 📅 По дням (10 дней разработки):
+### 📈 Общий прогресс
+```mermaid
+pie title Общий прогресс проекта (10%/100%)
+    "Завершено" : 10
+    "В работе" : 20
+    "В планах" : 70
