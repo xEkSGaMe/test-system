@@ -1,0 +1,179 @@
+version: '3.8'
+
+services:
+  # PostgreSQL для основной БД
+  postgres:
+    image: postgres:15-alpine
+    container_name: test-system-postgres
+    environment:
+      POSTGRES_DB: test_system
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 80s
+    networks:
+      - test-network
+    restart: unless-stopped
+
+  # MongoDB для пользователей
+  mongodb:
+    image: mongo:6-jammy
+    container_name: test-system-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: test_system
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+      - ./database/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh mongodb://admin:admin123@localhost:27017/test_system --quiet
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - test-network
+    restart: unless-stopped
+
+  # Redis для сессий
+  redis:
+    image: redis:7-alpine
+    container_name: test-system-redis
+    command: redis-server --appendonly yes --requirepass redis123
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - test-network
+    restart: unless-stopped
+
+  # Nginx для роутинга
+  nginx:
+    image: nginx:alpine
+    container_name: test-system-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - test-network
+    restart: unless-stopped
+
+  # Сервис авторизации (пока заглушка)
+  auth-service:
+    build: ./auth
+    container_name: test-system-auth
+    ports:
+      - "8081:8081"
+    environment:
+      - DATABASE_URL=postgres://admin:admin123@postgres:5432/test_system
+      - MONGO_URL=mongodb://admin:admin123@mongodb:27017/test_system
+      - REDIS_URL=redis://:redis123@redis:6379/0
+    volumes:
+      - ./auth:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - test-network
+    restart: unless-stopped
+
+  # Веб-клиент (пока заглушка)
+  web-client:
+    build: ./web-client
+    container_name: test-system-web
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - REACT_APP_API_URL=http://localhost:8081
+    volumes:
+      - ./web-client:/app
+      - /app/node_modules
+    depends_on:
+      - auth-service
+    networks:
+      - test-network
+    restart: unless-stopped
+
+  # Telegram бот (пока заглушка)
+  telegram-bot:
+    build: ./telegram-bot
+    container_name: test-system-telegram
+    environment:
+      - DATABASE_URL=postgres://admin:admin123@postgres:5432/test_system
+      - REDIS_URL=redis://:redis123@redis:6379/0
+    volumes:
+      - ./telegram-bot:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - test-network
+    restart: unless-stopped
+
+  # Главный модуль (пока заглушка)
+  core-service:
+    build: ./core
+    container_name: test-system-core
+    ports:
+      - "8082:8082"
+    environment:
+      - DATABASE_URL=postgres://admin:admin123@postgres:5432/test_system
+      - REDIS_URL=redis://:redis123@redis:6379/0
+    volumes:
+      - ./core:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - test-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  mongo_data:
+  redis_data:
+
+networks:
+  test-network:
+    driver: bridge
+    name: test-system-network
