@@ -1,0 +1,57 @@
+services:
+  auth-service:
+    build: ./auth
+    image: auth-service:dev
+    volumes:
+      - ./auth:/app
+      - /app/vendor
+    environment:
+      - WATCH_FILES=true
+    command: air -c .air.toml
+    ports:
+      - "8081:8081"
+    networks:
+      - test-network
+
+  core-service:
+    build: ./core
+    image: core-service:dev
+    volumes:
+      - ./core:/app
+    environment:
+      - DEBUG=true
+      - CMAKE_BUILD_TYPE=Debug
+    ports:
+      - "8082:8082"
+    networks:
+      - test-network
+
+  web-client:
+    build: ./web-client
+    image: web-client:dev
+    volumes:
+      - ./web-client:/app
+      - /app/node_modules
+    environment:
+      - WDS_SOCKET_PORT=0
+    ports:
+      - "3000:3000"
+    networks:
+      - test-network
+
+  telegram-bot:
+    build: ./telegram-bot
+    image: telegram-bot:dev
+    volumes:
+      - ./telegram-bot:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+    ports:
+      - "8083:8083"
+    networks:
+      - test-network
+
+networks:
+  test-network:
+    external: true
+    name: test-system_test-network
