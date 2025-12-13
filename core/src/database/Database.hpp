@@ -10,6 +10,9 @@ public:
     // Доступ к соединению для сервисов
     pqxx::connection& connection() { return *connection_; }
 
+    // Добавляем совместимость с вызовами db.conn()
+    pqxx::connection& conn() { return *connection_; }
+
     // Для health-check
     std::string get_connection_string() const { return conn_str_; }
 

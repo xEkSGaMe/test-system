@@ -27,22 +27,42 @@ std::string read_http_request(int client_socket) {
 }
 
 // Парсинг первой строки запроса
+// Заменить существующую parse_request на этот код
 std::map<std::string, std::string> parse_request(const std::string& request) {
     std::map<std::string, std::string> parsed;
     std::stringstream ss(request);
     std::string line;
-    std::getline(ss, line);
+
+    // Первая строка: METHOD PATH HTTP/1.1
+    if (!std::getline(ss, line)) return parsed;
     std::stringstream request_line(line);
     std::string method, path, http_version;
     request_line >> method >> path >> http_version;
     parsed["method"] = method;
     parsed["path"] = path;
-    if (method == "POST" || method == "PUT") {
-        size_t body_start = request.find("\r\n\r\n");
-        if (body_start != std::string::npos) parsed["body"] = request.substr(body_start + 4);
+
+    // Заголовки: читаем до пустой строки
+    while (std::getline(ss, line)) {
+        if (line == "\r" || line == "") break;
+        size_t colon = line.find(':');
+        if (colon != std::string::npos) {
+            std::string name = line.substr(0, colon);
+            size_t value_start = colon + 1;
+            while (value_start < line.size() && (line[value_start] == ' ' || line[value_start] == '\t')) ++value_start;
+            std::string value = line.substr(value_start);
+            if (!value.empty() && value.back() == '\r') value.pop_back();
+            parsed["hdr:" + name] = value;
+        }
     }
+
+    // Тело (если есть)
+    size_t body_start = request.find("\r\n\r\n");
+    if (body_start != std::string::npos) parsed["body"] = request.substr(body_start + 4);
+    else parsed["body"] = "";
+
     return parsed;
 }
+
 
 // Вспомогательная функция для извлечения ID из пути
 std::optional<int> extract_id_from_path(const std::string& path, const std::string& prefix) {
@@ -226,6 +246,74 @@ std::string handle_request(const std::string& full_request,
     }
 
     // ---------- HEALTH & ROOT ----------
+    // ---------- ATTEMPTS: POST /api/tests/{id}/submit ----------
+else if (method == "POST" && path.find("/api/tests/") == 0 && path.size() > std::string("/api/tests/").size() + std::string("/submit").size() && path.rfind("/submit") == path.size() - 7) {
+    // извлечь id между "/api/tests/" и "/submit"
+    std::string id_part = path.substr(std::string("/api/tests/").length(), path.length() - std::string("/api/tests/").length() - std::string("/submit").length());
+    int test_id = 0;
+    try { test_id = std::stoi(id_part); } catch (...) {
+        status_line = "HTTP/1.1 400 Bad Request";
+        response_body = "{\"code\":\"BAD_REQUEST\",\"message\":\"Invalid test id\"}";
+        // продолжим к отправке ответа
+    } 
+
+    if (test_id != 0) {
+        // Получить Authorization header (временно: "Bearer <user_id>" используется для тестирования)
+        std::string auth_header = "";
+        if (request_data.count("hdr:Authorization")) auth_header = request_data.at("hdr:Authorization");
+        int user_id = 0;
+        if (!auth_header.empty()) {
+            size_t pos = auth_header.find(" ");
+            if (pos != std::string::npos) {
+                std::string token = auth_header.substr(pos + 1);
+                try { user_id = std::stoi(token); } catch (...) { user_id = 0; }
+            }
+        }
+        if (user_id == 0) {
+            status_line = "HTTP/1.1 401 Unauthorized";
+            response_body = "{\"code\":\"UNAUTHORIZED\",\"message\":\"Missing or invalid Authorization header (use 'Bearer <user_id>' for now)\"}";
+        } else {
+            // Тело запроса (опционально initial_answers) — сохраняем как JSON строку
+            std::string answers_json = "null";
+            if (request_data.count("body") && !request_data.at("body").empty()) answers_json = request_data.at("body");
+
+            // Проверка существования теста
+            try {
+                pqxx::work w(db.conn());
+                pqxx::result r = w.exec_params("SELECT id FROM tests WHERE id = $1", test_id);
+                if (r.empty()) {
+                    status_line = "HTTP/1.1 404 Not Found";
+                    response_body = "{\"code\":\"NOT_FOUND\",\"message\":\"Test not found\"}";
+                } else {
+                    // Вставка попытки (answers сохраняем в поле answers JSONB)
+                    pqxx::work tx(db.conn());
+                    pqxx::result ins = tx.exec_params(
+                        "INSERT INTO attempts (user_id, test_id, answers, status) VALUES ($1, $2, $3::jsonb, $4) RETURNING id, started_at",
+                        user_id, test_id, answers_json, std::string("in_progress")
+                    );
+                    tx.commit();
+
+                    int attempt_id = ins[0][0].as<int>();
+                    std::string started_at = ins[0][1].as<std::string>();
+
+                    // Сформировать ответ вручную (без внешних JSON-библиотек)
+                    std::ostringstream oss;
+                    oss << "{\"attempt_id\":" << attempt_id
+                        << ",\"test_id\":" << test_id
+                        << ",\"user_id\":" << user_id
+                        << ",\"started_at\":\"" << started_at << "\""
+                        << ",\"status\":\"in_progress\"}";
+                    status_line = "HTTP/1.1 201 Created";
+                    response_body = oss.str();
+                }
+            } catch (const std::exception &e) {
+                status_line = "HTTP/1.1 500 Internal Server Error";
+                response_body = std::string("{\"code\":\"DB_ERROR\",\"message\":\"") + e.what() + "\"}";
+            }
+        }
+    }
+}
+
     else if (path == "/health") {
         try {
             pqxx::connection C(db.get_connection_string());
