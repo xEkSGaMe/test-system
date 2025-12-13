@@ -1,0 +1,39 @@
+﻿services:
+  # ----------------------------------------------------
+  # CORE API SERVICE (C++ SERVER)
+  # ----------------------------------------------------
+  core-api:
+    build:
+      context: ./core-api
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      # Строка подключения для libpqxx
+      DATABASE_URL: postgresql://admin:password@postgres:5432/test_system
+    depends_on:
+      - postgres
+    # Включаем горячую перезагрузку (монтирование кода)
+    volumes:
+      - ./core-api:/app
+
+  # ----------------------------------------------------
+  # POSTGRES DATABASE
+  # ----------------------------------------------------
+  postgres:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: test_system
+    ports:
+      - "5432:5432"
+    volumes:
+      # Сохранение данных между перезапусками
+      - postgres_data:/var/lib/postgresql/data
+      # Директория для миграций/инициализации БД
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  postgres_data:
