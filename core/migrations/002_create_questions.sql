@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS questions (
+    id SERIAL PRIMARY KEY,
+    test_id INT NOT NULL REFERENCES tests(id) ON DELETE CASCADE,
+    text VARCHAR(1024) NOT NULL,
+    type VARCHAR(32) NOT NULL DEFAULT 'single',
+    order_index INT NOT NULL DEFAULT 1,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
