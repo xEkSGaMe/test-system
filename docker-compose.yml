@@ -5,7 +5,6 @@ services:
   # PostgreSQL - используем более стабильную версию
   postgres:
     image: postgres:13-alpine
-    container_name: test-system-postgres
     environment:
       POSTGRES_DB: test_system
       POSTGRES_USER: admin
@@ -14,6 +13,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./core/migrations:/docker-entrypoint-initdb.d
     networks:
       - test-network
     restart: unless-stopped
@@ -58,13 +58,17 @@ services:
       - test-network
     restart: unless-stopped
 
-  # Core Service (C++) - заглушка пока
+  # Core Service (C++) - реальный сервис
   core-service:
-    image: alpine:latest
+    build:
+      context: ./core
     container_name: test-system-core
-    command: sh -c "echo 'Core Service (C++) - Not implemented yet' && sleep infinity"
+    environment:
+      DATABASE_URL: postgres://admin:admin123@postgres:5432/test_system
     ports:
-      - "8082:8082"
+      - "8080:8080"
+    depends_on:
+      - postgres
     networks:
       - test-network
     restart: unless-stopped
