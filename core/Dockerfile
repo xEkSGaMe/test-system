@@ -25,10 +25,9 @@ RUN addgroup --system app && adduser --system --ingroup app app
 COPY --from=build /src/build/core-api /usr/local/bin/core-api
 RUN chmod +x /usr/local/bin/core-api && chown app:app /usr/local/bin/core-api
 
-EXPOSE 8082
-
+EXPOSE 8080
 HEALTHCHECK --interval=10s --timeout=3s --start-period=10s --retries=3 \
-  CMD curl -f http://localhost:8082/health || exit 1
+  CMD curl -f http://localhost:8080/health || exit 1
 
 USER app
 WORKDIR /app
