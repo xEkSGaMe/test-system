@@ -5,16 +5,17 @@ TestService::TestService(Database& db) : db_(db) {}
 
 std::vector<Test> TestService::list() {
   pqxx::work tx{db_.connection()};
-  auto r = tx.exec("SELECT id, title, description, author_id, is_published FROM tests ORDER BY id ASC");
+  auto r = tx.exec("SELECT id, title, description FROM tests ORDER BY id ASC");
   std::vector<Test> out;
   out.reserve(r.size());
   for (const auto& row : r) {
     Test t;
     t.id = row["id"].as<int>();
     t.title = row["title"].as<std::string>();
-    t.description = row["description"].is_null() ? std::optional<std::string>{} : std::make_optional(row["description"].c_str());
-    t.author_id = row["author_id"].is_null() ? std::optional<int>{} : std::make_optional(row["author_id"].as<int>());
-    t.is_published = row["is_published"].as<bool>();
+    t.description = row["description"].is_null() 
+        ? std::optional<std::string>{} 
+        : std::make_optional(row["description"].c_str());
+    // Убрали author_id и is_published
     out.push_back(std::move(t));
   }
   tx.commit();
@@ -24,16 +25,17 @@ std::vector<Test> TestService::list() {
 std::optional<Test> TestService::get(int id) {
   pqxx::work tx{db_.connection()};
   auto r = tx.exec_params(
-    "SELECT id, title, description, author_id, is_published FROM tests WHERE id = $1 LIMIT 1", id
+    "SELECT id, title, description FROM tests WHERE id = $1 LIMIT 1", id
   );
   if (r.empty()) return std::nullopt;
   const auto& row = r[0];
   Test t;
   t.id = row["id"].as<int>();
   t.title = row["title"].as<std::string>();
-  t.description = row["description"].is_null() ? std::optional<std::string>{} : std::make_optional(row["description"].c_str());
-  t.author_id = row["author_id"].is_null() ? std::optional<int>{} : std::make_optional(row["author_id"].as<int>());
-  t.is_published = row["is_published"].as<bool>();
+  t.description = row["description"].is_null() 
+      ? std::optional<std::string>{} 
+      : std::make_optional(row["description"].c_str());
+  // Убрали author_id и is_published
   tx.commit();
   return t;
 }
