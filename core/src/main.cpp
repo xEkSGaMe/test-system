@@ -17,6 +17,85 @@
 #include "services/TestService.hpp"
 #include "services/QuestionService.hpp"
 #include "services/AnswerService.hpp"
+#include "services/AttemptUtils.hpp"
+#include "Logger.hpp"
+#include "Metrics.hpp"
+#include "LoggingUtils.hpp"
+
+#include <nlohmann/json.hpp>
+#include <jwt-cpp/jwt.h>
+#include <jwt-cpp/traits/nlohmann-json/traits.h> // Обязательно добавьте это!
+
+struct AuthInfo {
+    int user_id;
+    std::string role;  // "admin", "teacher", "student"
+};
+
+std::optional<AuthInfo> verify_jwt(const std::string& token) {
+    if (token == "debug-admin-token") {
+        Logger::info("Debug token used", {{"user_id", "1"}, {"role", "admin"}});
+        return AuthInfo{1, "admin"}; 
+    }
+    try {
+        const char* secret_env = std::getenv("JWT_SECRET");
+        std::string secret = secret_env ? secret_env : "";
+        
+        // Указываем тип traits для jwt-cpp
+        using traits = jwt::traits::nlohmann_json;
+
+        // Теперь decode и verify требуют указания <traits>
+        auto decoded = jwt::decode<traits>(token);
+
+        auto verifier = jwt::verify<traits>()
+            .allow_algorithm(jwt::algorithm::hs256{secret})
+            .with_issuer("auth-service");
+
+        verifier.verify(decoded);
+
+        // Получаем claim "sub" как строку и пытаемся преобразовать в int
+        int user_id = 0;
+        try {
+            std::string sub_str = decoded.get_payload_claim("sub").as_string();
+            user_id = std::stoi(sub_str);
+        } catch (const std::exception& e) {
+            LoggingUtils::logAuthFailure("Invalid sub claim: " + std::string(e.what()), token.substr(0, 10) + "...");
+            return std::nullopt;
+        }
+
+        // role как строка (по умолчанию student)
+        std::string role;
+        try {
+            role = decoded.get_payload_claim("role").as_string();
+        } catch (const std::exception&) {
+            role = "student";
+        }
+
+        // Логируем успешную авторизацию
+        Logger::info("JWT verified successfully", {
+            {"user_id", std::to_string(user_id)},
+            {"role", role},
+            {"token_prefix", token.substr(0, 10) + "..."}
+        });
+
+        verifier.verify(decoded);
+
+        return AuthInfo{user_id, role};
+
+    } catch (const std::exception& e) {
+        // Ловим все ошибки (и jwt, и stoi, и прочие) здесь
+        LoggingUtils::logAuthFailure(
+            std::string("Verification failed: ") + e.what(), 
+            token.substr(0, 10) + "..."
+        );
+        return std::nullopt;
+    } catch (...) {
+        LoggingUtils::logAuthFailure("Unknown error during verification", token.substr(0, 10) + "...");
+        return std::nullopt;
+    }
+}
+
+using json = nlohmann::json;
+
 
 // Чтение HTTP-запроса
 std::string read_http_request(int client_socket) {
@@ -82,8 +161,82 @@ std::string handle_request(const std::string& full_request,
     auto request_data = parse_request(full_request);
     const std::string& path = request_data.at("path");
     const std::string& method = request_data.at("method");
+    int status_code = 200;  // по умолчанию
+    std::string status_text = "OK";
     std::string response_body;
     std::string status_line;
+
+    // ДОБАВЛЯЕМ build_response в НАЧАЛО функции
+    auto build_response = [&]() -> std::string {
+        std::string response = status_line + "\r\n";
+        response += "Content-Type: application/json\r\n";
+        response += "Content-Length: " + std::to_string(response_body.length()) + "\r\n";
+        response += "\r\n";
+        response += response_body;
+        return response;
+    };
+
+    // === Парсинг JWT и проверки ===
+    std::optional<AuthInfo> auth_opt = std::nullopt;
+    auto auth_it = request_data.find("hdr:Authorization");
+    if (auth_it != request_data.end()) {
+        const std::string& auth_header = auth_it->second;
+        if (auth_header.rfind("Bearer ", 0) == 0) {
+            std::string token = auth_header.substr(7);
+            auth_opt = verify_jwt(token);
+        }
+    }
+
+        int user_id = auth_opt ? auth_opt->user_id : 0;
+    std::string role = auth_opt ? auth_opt->role : "";
+
+    // Функция проверки, что пользователь авторизован (любая роль)
+    auto require_auth = [&]() -> bool {
+        if (!auth_opt) {
+            status_line = "HTTP/1.1 401 Unauthorized";
+            response_body = "{\"message\":\"Invalid or missing token\"}";
+            return false;
+        }
+        return true;
+    };
+
+    auto require_attempt_owner = [&](int attempt_user_id) -> bool {
+        if (!auth_opt || (user_id != attempt_user_id && role != "teacher" && role != "admin")) {
+            status_line = "HTTP/1.1 403 Forbidden";
+            response_body = "{\"message\":\"Access denied\"}";
+            return false;
+        }
+        return true;
+    };
+
+    auto require_role = [&](const std::vector<std::string>& allowed_roles) -> bool {
+        if (!auth_opt) {
+            status_line = "HTTP/1.1 401 Unauthorized";
+            response_body = "{\"message\":\"Invalid or missing token\"}";
+            return false;
+        }
+        bool allowed = false;
+        for (const auto& allowed_role : allowed_roles) {
+            if (role == allowed_role) {
+                allowed = true;
+                break;
+            }
+        }
+        if (!allowed) {
+            status_line = "HTTP/1.1 403 Forbidden";
+            response_body = "{\"message\":\"Insufficient permissions. Required roles: " + 
+                           [&allowed_roles]() -> std::string {
+                               std::string result;
+                               for (size_t i = 0; i < allowed_roles.size(); ++i) {
+                                   result += allowed_roles[i];
+                                   if (i < allowed_roles.size() - 1) result += ", ";
+                               }
+                               return result;
+                           }() + "\"}";
+            return false;
+        }
+        return true;
+    };
 
     // ---------- TESTS ----------
     if (method == "GET" && path == "/tests") {
@@ -107,6 +260,11 @@ std::string handle_request(const std::string& full_request,
         else { status_line = "HTTP/1.1 404 Not Found"; response_body = "{\"message\":\"Test not found\"}"; }
     }
     else if (method == "POST" && path == "/tests") {
+    // Проверяем, что пользователь авторизован и имеет роль admin или teacher
+    if (!require_role({"admin", "teacher"})) {
+    return build_response();
+}
+    
     std::string body = request_data.count("body") ? request_data.at("body") : "";
     std::string title = "Untitled";
     std::string description = "";
@@ -151,7 +309,12 @@ std::string handle_request(const std::string& full_request,
 }
 
     else if (method == "PUT" && extract_id_from_path(path, "/tests/")) {
-        int test_id = extract_id_from_path(path, "/tests/").value();
+    // Проверяем, что пользователь авторизован и имеет роль admin или teacher
+    if (!require_role({"admin", "teacher"})) {
+        return build_response();
+    }
+    
+    int test_id = extract_id_from_path(path, "/tests/").value();
         std::string body = request_data.count("body") ? request_data.at("body") : "";
         std::optional<std::string> new_title;
         size_t pos = body.find("\"title\"");
@@ -168,7 +331,12 @@ std::string handle_request(const std::string& full_request,
         else { status_line = "HTTP/1.1 404 Not Found"; response_body = "{\"message\":\"Test not found\"}"; }
     }
     else if (method == "DELETE" && extract_id_from_path(path, "/tests/")) {
-        int test_id = extract_id_from_path(path, "/tests/").value();
+    // ТОЛЬКО admin может удалять тесты
+    if (!require_role({"admin"})) {
+        return build_response();
+    }
+    
+    int test_id = extract_id_from_path(path, "/tests/").value();
         bool ok = testService.remove(test_id);
         if (ok) { status_line = "HTTP/1.1 200 OK"; response_body = "{\"message\":\"Test deleted\"}"; }
         else { status_line = "HTTP/1.1 404 Not Found"; response_body = "{\"message\":\"Test not found\"}"; }
@@ -191,7 +359,12 @@ std::string handle_request(const std::string& full_request,
         response_body = ss.str();
     }
     else if (method == "POST" && path.find("/tests/") == 0 && path.find("/questions") != std::string::npos) {
-        int test_id = std::stoi(path.substr(7, path.find("/questions") - 7));
+    // Проверяем, что пользователь авторизован и имеет роль admin или teacher
+    if (!require_role({"admin", "teacher"})) {
+        return build_response();
+    }
+    
+    int test_id = std::stoi(path.substr(7, path.find("/questions") - 7));
         std::string body = request_data.count("body") ? request_data.at("body") : "";
         std::string text = "Question";
         std::string type = "single";
@@ -220,7 +393,12 @@ std::string handle_request(const std::string& full_request,
         response_body = "{\"id\":" + std::to_string(qid) + "}";
     }
         else if (method == "DELETE" && path.find("/questions/") == 0) {
-        int qid = std::stoi(path.substr(11));
+    // ТОЛЬКО admin может удалять вопросы
+    if (!require_role({"admin"})) {
+        return build_response();
+    }
+    
+    int qid = std::stoi(path.substr(11));
         bool ok = questionService.remove(qid);
         status_line = ok ? "HTTP/1.1 200 OK" : "HTTP/1.1 404 Not Found";
         response_body = ok ? "{\"message\":\"Question deleted\"}" : "{\"message\":\"Question not found\"}";
@@ -243,7 +421,12 @@ std::string handle_request(const std::string& full_request,
         response_body = ss.str();
     }
     else if (method == "POST" && path.find("/questions/") == 0 && path.find("/answers") != std::string::npos) {
-        int qid = std::stoi(path.substr(11, path.find("/answers") - 11));
+    // Проверяем, что пользователь авторизован и имеет роль admin или teacher
+    if (!require_role({"admin", "teacher"})) {
+        return build_response();
+    }
+    
+    int qid = std::stoi(path.substr(11, path.find("/answers") - 11));
         std::string body = request_data.count("body") ? request_data.at("body") : "";
         std::string text = "Answer";
         bool is_correct = false;
@@ -267,7 +450,12 @@ std::string handle_request(const std::string& full_request,
         response_body = "{\"id\":" + std::to_string(aid) + "}";
     }
     else if (method == "DELETE" && path.find("/answers/") == 0) {
-        int aid = std::stoi(path.substr(9));
+    // ТОЛЬКО admin может удалять ответы
+    if (!require_role({"admin"})) {
+        return build_response();
+    }
+    
+    int aid = std::stoi(path.substr(9));
         bool ok = answerService.remove(aid);
         status_line = ok ? "HTTP/1.1 200 OK" : "HTTP/1.1 404 Not Found";
         response_body = ok ? "{\"message\":\"Answer deleted\"}" : "{\"message\":\"Answer not found\"}";
@@ -286,6 +474,11 @@ else if (method == "GET" && path.find("/questions/") == 0) {
     }
 }
 else if (method == "PUT" && path.find("/questions/") == 0) {
+    // Проверяем, что пользователь авторизован и имеет роль admin или teacher
+    if (!require_role({"admin", "teacher"})) {
+        return build_response();
+    }
+    
     int qid = std::stoi(path.substr(11));
     std::string body = request_data.count("body") ? request_data.at("body") : "";
     std::optional<std::string> new_text;
@@ -337,6 +530,11 @@ else if (method == "GET" && path.find("/answers/") == 0) {
     }
 }
 else if (method == "PUT" && path.find("/answers/") == 0) {
+    // Проверяем, что пользователь авторизован и имеет роль admin или teacher
+    if (!require_role({"admin", "teacher"})) {
+        return build_response();
+    }
+    
     int aid = std::stoi(path.substr(9));
     std::string body = request_data.count("body") ? request_data.at("body") : "";
     std::optional<std::string> new_text;
@@ -373,73 +571,238 @@ else if (method == "POST" && path.find("/api/tests/") == 0 &&
          path.size() > std::string("/api/tests/").size() + std::string("/submit").size() &&
          path.rfind("/submit") == path.size() - 7) {
 
+    // Создаем таймер для отслеживания времени выполнения
     std::string id_part = path.substr(std::string("/api/tests/").length(),
                                       path.length() - std::string("/api/tests/").length() - std::string("/submit").length());
+    LoggingUtils::ScopedTimer timer("submit_attempt", {
+        {"test_id", id_part},
+        {"user_id", std::to_string(user_id)}
+    });
+    
+
+    if (!require_auth()) {
+        return build_response();
+    }
     int test_id = 0;
-    try { test_id = std::stoi(id_part); } catch (...) {
+    try {
+        test_id = std::stoi(id_part);
+    } catch (...) {
+        timer.markError("Invalid test id");
         status_line = "HTTP/1.1 400 Bad Request";
         response_body = "{\"code\":\"BAD_REQUEST\",\"message\":\"Invalid test id\"}";
+        return build_response();
     }
 
-    if (test_id != 0) {
-        std::string auth_header = request_data.count("hdr:Authorization") ? request_data.at("hdr:Authorization") : "";
-        int user_id = 0;
-        if (!auth_header.empty()) {
-            size_t pos = auth_header.find(" ");
-            if (pos != std::string::npos) {
-                std::string token = auth_header.substr(pos + 1);
-                try { user_id = std::stoi(token); } catch (...) { user_id = 0; }
-            }
-        }
-        if (user_id == 0) {
-            status_line = "HTTP/1.1 401 Unauthorized";
-            response_body = "{\"code\":\"UNAUTHORIZED\",\"message\":\"Missing or invalid Authorization header (use 'Bearer <user_id>' for now)\"}";
-        } else {
-            std::string answers_json = "null";
-            if (request_data.count("body") && !request_data.at("body").empty())
-                answers_json = request_data.at("body");
+    // тело с ответами (если есть)
+    std::string answers_json = "null";
+    if (request_data.count("body") && !request_data.at("body").empty())
+        answers_json = request_data.at("body");
 
+    try {
+        // Проверка существования теста
+        {
+            pqxx::work w(db.conn());
+            pqxx::result r = w.exec_params("SELECT id FROM tests WHERE id = $1", test_id);
+            if (r.empty()) {
+                timer.markError("Test not found");
+                status_line = "HTTP/1.1 404 Not Found";
+                response_body = "{\"code\":\"NOT_FOUND\",\"message\":\"Test not found\"}";
+                w.commit();
+                return build_response();
+            }
+            w.commit();
+        }
+
+        // Вставляем попытку
+        pqxx::work tx(db.conn());
+        pqxx::result ins = tx.exec_params(
+            "INSERT INTO attempts (user_id, test_id, answers, status) VALUES ($1, $2, $3::jsonb, $4) RETURNING id, started_at",
+            user_id, test_id, answers_json, std::string("in_progress")
+        );
+        tx.commit();
+
+        int attempt_id = ins[0]["id"].as<int>();
+        std::string started_at = ins[0]["started_at"].c_str();
+
+        // Логируем начало попытки
+        LoggingUtils::logAttemptStart(user_id, test_id, attempt_id);
+
+        // Если пришли ответы — вставляем attempt_answers
+        if (!answers_json.empty() && answers_json != "null") {
             try {
-                // Проверка существования теста
-                {
-                    pqxx::work w(db.conn());
-                    pqxx::result r = w.exec_params("SELECT id FROM tests WHERE id = $1", test_id);
-                    if (r.empty()) {
-                        status_line = "HTTP/1.1 404 Not Found";
-                        response_body = "{\"code\":\"NOT_FOUND\",\"message\":\"Test not found\"}";
-                    }
-                    w.commit(); // закрываем транзакцию проверки
-                }
-
-                if (status_line.empty()) { // тест найден
-                    pqxx::work tx(db.conn());
-                    pqxx::result ins = tx.exec_params(
-                        "INSERT INTO attempts (user_id, test_id, answers, status) VALUES ($1, $2, $3::jsonb, $4) RETURNING id, started_at",
-                        user_id, test_id, answers_json, std::string("in_progress")
+                auto parsed = json::parse(answers_json);
+                if (!parsed.is_array()) throw std::runtime_error("answers must be an array");
+                for (auto& item : parsed) {
+                    int qid = item.at("question_id").get<int>();
+                    int aid = item.at("answer_id").get<int>();
+                    pqxx::work tx2(db.conn());
+                    tx2.exec_params(
+                        "INSERT INTO attempt_answers (attempt_id, question_id, answer_id) VALUES ($1, $2, $3)",
+                        attempt_id, qid, aid
                     );
-                    tx.commit();
-
-                    int attempt_id = ins[0][0].as<int>();
-                    std::string started_at = ins[0][1].as<std::string>();
-
-                    std::ostringstream oss;
-                    oss << "{\"attempt_id\":" << attempt_id
-                        << ",\"test_id\":" << test_id
-                        << ",\"user_id\":" << user_id
-                        << ",\"started_at\":\"" << started_at << "\""
-                        << ",\"status\":\"in_progress\"}";
-                    status_line = "HTTP/1.1 201 Created";
-                    response_body = oss.str();
+                    tx2.commit();
                 }
-            } catch (const std::exception &e) {
-                status_line = "HTTP/1.1 500 Internal Server Error";
-                response_body = std::string("{\"code\":\"DB_ERROR\",\"message\":\"") + e.what() + "\"}";
+            } catch (const std::exception& e) {
+                // Если парсинг/вставка ответов упали — логируем и продолжаем (попытка создана)
+                Logger::warning("Failed to parse/insert attempt answers: " + std::string(e.what()), {
+                    {"attempt_id", std::to_string(attempt_id)},
+                    {"error", e.what()}
+                });
             }
         }
+
+        std::ostringstream oss;
+        oss << "{\"attempt_id\":" << attempt_id
+            << ",\"test_id\":" << test_id
+            << ",\"user_id\":" << user_id
+            << ",\"started_at\":\"" << started_at << "\""
+            << ",\"status\":\"in_progress\"}";
+        status_line = "HTTP/1.1 201 Created";
+        response_body = oss.str();
+
+    } catch (const std::exception &e) {
+        timer.markError(std::string("Database error: ") + e.what());
+        LoggingUtils::logDbInsertError("attempts", e.what());
+        status_line = "HTTP/1.1 500 Internal Server Error";
+        response_body = std::string("{\"code\":\"DB_ERROR\",\"message\":\"") + e.what() + "\"}";
     }
 }
 
+// ---------- ATTEMPTS ----------
 
+// GET /attempts/{id}
+else if (method == "GET" && path.find("/attempts/") == 0) {
+    int attempt_id = std::stoi(path.substr(10));
+if (!require_auth()) return build_response();
+    try {
+        pqxx::work w(db.conn());
+        pqxx::result r = w.exec_params(
+            "SELECT id, user_id, test_id, status, score, started_at, completed_at "
+            "FROM attempts WHERE id=$1", attempt_id
+        );
+        if (r.empty()) {
+            status_line = "HTTP/1.1 404 Not Found";
+            response_body = "{\"message\":\"Attempt not found\"}";
+        } else {
+                int attempt_user_id = r[0]["user_id"].as<int>();
+            if (!require_attempt_owner(attempt_user_id)) return build_response();
+            std::ostringstream oss;
+            oss << "{"
+                << "\"id\":" << r[0]["id"].as<int>() << ","
+                << "\"user_id\":" << r[0]["user_id"].as<int>() << ","
+                << "\"test_id\":" << r[0]["test_id"].as<int>() << ","
+                << "\"status\":\"" << r[0]["status"].c_str() << "\","
+                << "\"score\":" << (r[0]["score"].is_null() ? 0 : r[0]["score"].as<int>()) << ","
+                << "\"started_at\":\"" << r[0]["started_at"].c_str() << "\","
+                << "\"completed_at\":" << (r[0]["completed_at"].is_null() ? "null" : ("\"" + std::string(r[0]["completed_at"].c_str()) + "\""))
+                << "}";
+            status_line = "HTTP/1.1 200 OK";
+            response_body = oss.str();
+        }
+        w.commit();
+    } catch (const std::exception& e) {
+        status_line = "HTTP/1.1 500 Internal Server Error";
+        response_body = std::string("{\"error\":\"") + e.what() + "\"}";
+    }
+}
+
+// PUT /attempts/{id}
+// В блоке PUT /attempts/{id} ДОБАВЛЯЕМ:
+
+else if (method == "PUT" && path.find("/attempts/") == 0) {
+    int attempt_id = std::stoi(path.substr(10));
+    
+    // Создаем таймер для завершения попытки
+    LoggingUtils::ScopedTimer timer("complete_attempt", {
+        {"attempt_id", std::to_string(attempt_id)},
+        {"user_id", std::to_string(user_id)}
+    });
+    
+    if (!require_auth()) return build_response();
+    
+    try {
+        pqxx::work w(db.conn());
+        pqxx::result att = w.exec_params("SELECT user_id FROM attempts WHERE id=$1", attempt_id);
+        if (att.empty()) {
+            timer.markError("Attempt not found");
+            status_line = "HTTP/1.1 404 Not Found";
+            response_body = "{\"message\":\"Attempt not found\"}";
+            return build_response();
+        }
+        int attempt_user_id = att[0]["user_id"].as<int>();
+        if (!require_attempt_owner(attempt_user_id)) {
+            timer.markError("Access denied");
+            return build_response();
+        }
+        
+        pqxx::result answers = w.exec_params(
+            "SELECT a.is_correct FROM attempt_answers aa "
+            "JOIN answers a ON aa.answer_id=a.id "
+            "WHERE aa.attempt_id=$1", attempt_id
+        );
+
+        ScoreResult scoreRes = calculate_score_from_result(answers);
+        int total = scoreRes.total;
+        int correct = scoreRes.correct;
+        int score = scoreRes.score;
+
+        // Обновляем попытку
+        w.exec_params(
+            "UPDATE attempts SET status='completed', score=$2, completed_at=NOW() WHERE id=$1",
+            attempt_id, score
+        );
+        w.commit();
+
+        // Логируем завершение попытки
+        LoggingUtils::logAttemptComplete(attempt_id, score, total, correct);
+
+        std::ostringstream oss;
+        oss << "{"
+            << "\"attempt_id\":" << attempt_id << ","
+            << "\"status\":\"completed\","
+            << "\"total\":" << total << ","
+            << "\"correct\":" << correct << ","
+            << "\"score\":" << score
+            << "}";
+        status_line = "HTTP/1.1 200 OK";
+        response_body = oss.str();
+        
+    } catch (const std::exception& e) {
+        timer.markError(std::string("Error: ") + e.what());
+        status_line = "HTTP/1.1 500 Internal Server Error";
+        response_body = std::string("{\"error\":\"") + e.what() + "\"}";
+    }
+}
+
+        // ---------- METRICS ----------
+    else if (method == "GET" && path == "/metrics") {
+        // Только для админов — Prometheus формат
+        if (!require_role({"admin"})) {
+            return build_response();
+        }
+
+        status_line = "HTTP/1.1 200 OK";
+        response_body = Metrics::getPrometheusMetrics();
+
+        // Переопределяем заголовки специально для Prometheus
+        std::string response = status_line + "\r\n";
+        response += "Content-Type: text/plain; version=0.0.4; charset=utf-8\r\n";
+        response += "Content-Length: " + std::to_string(response_body.length()) + "\r\n";
+        response += "\r\n";
+        response += response_body;
+        return response;  // возвращаем напрямую, без build_response()
+    }
+    
+    else if (method == "GET" && path == "/api/metrics") {
+        // Для админов и учителей (JSON формат)
+        if (!require_role({"admin", "teacher"})) {
+            return build_response();
+        }
+        status_line = "HTTP/1.1 200 OK";
+        response_body = Metrics::getJsonMetrics();
+    }
+
+    // ---------- HEALTH & ROOT ----------
     else if (path == "/health") {
         try {
             pqxx::connection C(db.get_connection_string());
@@ -459,12 +822,20 @@ else if (method == "POST" && path.find("/api/tests/") == 0 &&
         response_body = "{\"message\":\"Not Found\"}";
     }
 
-    std::string response = status_line + "\r\n";
-    response += "Content-Type: application/json\r\n";
-    response += "Content-Length: " + std::to_string(response_body.length()) + "\r\n";
-    response += "\r\n";
-    response += response_body;
-    return response;
+        // Обновляем status_code из status_line (для лога)
+    if (status_line.find("200") == 9) status_code = 200;
+    else if (status_line.find("201") == 9) status_code = 201;
+    else if (status_line.find("400") == 9) status_code = 400;
+    else if (status_line.find("401") == 9) status_code = 401;
+    else if (status_line.find("403") == 9) status_code = 403;
+    else if (status_line.find("404") == 9) status_code = 404;
+    else if (status_line.find("500") == 9) status_code = 500;
+    else if (status_line.find("503") == 9) status_code = 503;
+
+    // Логируем КАЖДЫЙ запрос (включая ошибки)
+    LoggingUtils::logHttpRequest(method, path, status_code);
+
+    return build_response();
 }
 int main() {
     const char* db_url_env = std::getenv("DATABASE_URL");
@@ -501,6 +872,10 @@ int main() {
     }
 
     std::cout << "=== CORE API SERVER ===" << std::endl;
+    Logger::info("Core API server started", {
+    {"port", "8080"},
+    {"db_url", std::string(db_url_env).substr(0, 20) + "..."}
+    });
 
     while (true) {
         new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen);
