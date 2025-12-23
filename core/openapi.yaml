@@ -1,0 +1,72 @@
+openapi: 3.0.0
+info:
+  title: Core API System (C++)
+  description: API для управления тестами, вопросами и автоматического подсчета баллов.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+    description: Локальный сервер разработки
+
+paths:
+  /tests:
+    get:
+      summary: Получить список всех тестов
+      responses:
+        '200':
+          description: Список тестов успешно получен
+          content:
+            application/json:
+              example:
+                - id: 1
+                  title: "Основы C++"
+                  description: "Тест на знание синтаксиса"
+
+  /attempts/{id}/finish:
+    put:
+      summary: Завершить попытку прохождения и рассчитать балл
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID попытки из таблицы attempts
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Тест завершен, результат сохранен в БД
+          content:
+            application/json:
+              example:
+                status: "completed"
+                attempt_id: 5
+                score: 85
+                correct: 17
+                total: 20
+        '400':
+          description: Неверный ID попытки
+        '500':
+          description: Ошибка базы данных
+
+  /metrics:
+    get:
+      summary: Технические метрики (Prometheus)
+      description: Используется Никитой (DevOps) для мониторинга состояния сервера.
+      responses:
+        '200':
+          description: Метрики в текстовом формате
+          content:
+            text/plain:
+              example: "http_requests_total{method=\"GET\",path=\"/tests\"} 42"
+
+  /health:
+    get:
+      summary: Проверка работоспособности
+      responses:
+        '200':
+          description: Сервер и БД доступны
+          content:
+            application/json:
+              example:
+                status: "ok"
+                db: "connected"
