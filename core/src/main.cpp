@@ -741,7 +741,7 @@ else if (method == "PUT" && path.find("/attempts/") == 0) {
             "WHERE aa.attempt_id=$1", attempt_id
         );
 
-        ScoreResult scoreRes = calculate_score_from_result(answers);
+        ScoreResult scoreRes = AttemptUtils::calculate_score_from_result(answers);
         int total = scoreRes.total;
         int correct = scoreRes.correct;
         int score = scoreRes.score;
