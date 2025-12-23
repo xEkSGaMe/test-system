@@ -12,15 +12,12 @@ import (
     "github.com/gin-contrib/cors"
     "github.com/gin-gonic/gin"
     "github.com/redis/go-redis/v9"
-    "go.mongodb.org/mongo-driver/mongo"
-    "go.mongodb.org/mongo-driver/mongo/options"
     "go.uber.org/zap"
 
     "auth-service/internal/config"
     "auth-service/internal/handlers"
     "auth-service/internal/repositories"
     "auth-service/internal/services"
-    "auth-service/pkg/auth"
     "auth-service/pkg/redisclient"
 )
 
@@ -40,26 +37,19 @@ func main() {
     }
     defer logger.Sync()
 
-    // Connect to MongoDB
-    mongoCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-    defer cancel()
-
-    mongoClient, err := mongo.Connect(mongoCtx, options.Client().ApplyURI(cfg.MongoDBURI))
+    // Connect to PostgreSQL
+    db, err := repositories.NewPostgresDB(cfg.PostgresDSN, logger)
     if err != nil {
-        logger.Fatal("Failed to connect to MongoDB", zap.Error(err))
+        logger.Fatal("Failed to connect to PostgreSQL", zap.Error(err))
     }
-    defer func() {
-        if err = mongoClient.Disconnect(context.Background()); err != nil {
-            logger.Error("Failed to disconnect MongoDB", zap.Error(err))
-        }
-    }()
+    defer db.Close()
 
     // Connect to Redis
     redisClient := redisclient.New(cfg.RedisURL)
     defer redisClient.Close()
 
     // Initialize repositories
-    userRepo := repositories.NewUserRepository(mongoClient.Database(cfg.MongoDBDatabase))
+    userRepo := repositories.NewUserRepository(db)
 
     // Initialize services
     authService := services.NewAuthService(userRepo, redisClient, cfg)
