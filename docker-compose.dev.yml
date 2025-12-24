@@ -1,4 +1,14 @@
 services:
+  redis:
+    image: redis:6.2-alpine
+    container_name: test-system-redis-dev
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    networks:
+      - test-network
+    restart: unless-stopped
+
   auth-service:
     build: ./auth
     image: auth-service:dev
@@ -44,12 +54,17 @@ services:
     image: telegram-bot:dev
     volumes:
       - ./telegram-bot:/app
+    env_file:
+      - ./telegram-bot/.env.docker  # Используем отдельный файл
     environment:
       - PYTHONUNBUFFERED=1
     ports:
       - "8083:8083"
     networks:
       - test-network
+    restart: unless-stopped
+    depends_on:
+      - redis
 
 networks:
   test-network:

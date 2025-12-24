@@ -53,12 +53,16 @@ services:
       API_URL: http://auth-service:8081/api
 
   telegram-bot:
-    build: ./telegram-bot
-    environment:
-      BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
-      API_URL: http://auth-service:8081/api
-    depends_on:
-      - auth-service
+  build: ./telegram-bot
+  ports:
+    - "8083:8083"
+  environment:
+    REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/2  # Пароль из .env
+    TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}           # Токен из .env
+  depends_on:
+    redis:
+      condition: service_healthy
+  restart: unless-stopped
 
 volumes:
   postgres_data:
