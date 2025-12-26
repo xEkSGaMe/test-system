@@ -1,70 +1,27 @@
 package utils
 
 import (
-    "crypto/rand"
-    "encoding/hex"
-    "fmt"
-    "regexp"
-    "strings"
-    "time"
-
-    "go.mongodb.org/mongo-driver/bson/primitive"
+	"golang.org/x/crypto/bcrypt"
+	"regexp"
 )
 
-func GenerateRandomString(n int) (string, error) {
-    bytes := make([]byte, n)
-    if _, err := rand.Read(bytes); err != nil {
-        return "", err
-    }
-    return hex.EncodeToString(bytes), nil
+// HashPassword создает bcrypt хеш пароля
+func HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(bytes), nil
 }
 
-func GenerateLoginToken() string {
-    return primitive.NewObjectID().Hex()
+// CheckPasswordHash сравнивает пароль с хешем
+func CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
 }
 
-func HashString(input string) string {
-    return primitive.NewObjectID().Hex()
-}
-
+// ValidateEmail проверяет формат email
 func ValidateEmail(email string) bool {
-    re := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
-    return re.MatchString(email)
-}
-
-func ParseObjectID(id string) (primitive.ObjectID, error) {
-    return primitive.ObjectIDFromHex(id)
-}
-
-var anonymousCounter int = 0
-
-func GenerateAnonymousName() string {
-    anonymousCounter++
-    return fmt.Sprintf("Аноним%d", anonymousCounter)
-}
-
-func ParseRoles(rolesStr string) ([]string, error) {
-    roles := strings.Split(rolesStr, ",")
-    for i, role := range roles {
-        roles[i] = strings.TrimSpace(role)
-    }
-    return roles, nil
-}
-
-func ContainsString(slice []string, str string) bool {
-    for _, s := range slice {
-        if s == str {
-            return true
-        }
-    }
-    return false
-}
-
-func RemoveString(slice []string, str string) []string {
-    for i, s := range slice {
-        if s == str {
-            return append(slice[:i], slice[i+1:]...)
-        }
-    }
-    return slice
+	re := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
+	return re.MatchString(email)
 }
