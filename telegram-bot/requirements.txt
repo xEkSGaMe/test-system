@@ -1,5 +1,4 @@
-pyTelegramBotAPI==4.15.0
-redis==5.0.0
+python-telegram-bot[job-queue]==20.3
+redis==4.5.4
 requests==2.31.0
 python-dotenv==1.0.0
-schedule==1.2.0
