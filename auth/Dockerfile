@@ -1,47 +1,40 @@
-# Build stage
-FROM golang:1.21-alpine AS builder
+# auth/Dockerfile
+# ИЗМЕНЯЕМ: golang:1.21-alpine → golang:1.23-alpine
+FROM golang:1.23-alpine AS builder
 
 WORKDIR /app
 
-# Install dependencies for build
-RUN apk add --no-cache git gcc musl-dev
+# Устанавливаем зависимости для сборки и psql для миграций
+RUN apk add --no-cache gcc musl-dev postgresql-client bash
 
-# Copy go mod files
+# Копируем go.mod и go.sum
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Copy source code
+# Копируем исходный код
 COPY . .
 
-# Build the application
-RUN CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o main ./cmd
+# Собираем приложение
+RUN CGO_ENABLED=1 GOOS=linux go build -o auth-service ./cmd
 
-# Runtime stage
-FROM alpine:latest
+# Финальный образ
+# ИЗМЕНЯЕМ: alpine:latest → alpine:3.20 (для совместимости)
+FROM alpine:3.20
 
-RUN apk --no-cache add ca-certificates tzdata
+# Устанавливаем psql для выполнения миграций
+RUN apk --no-cache add ca-certificates postgresql-client bash
 
 WORKDIR /root/
 
-# Copy the binary from builder
-COPY --from=builder /app/main .
+# Копируем бинарник из builder
+COPY --from=builder /app/auth-service .
+COPY --from=builder /app/wait-and-migrate.sh .
+COPY --from=builder /app/migrations ./migrations
 
-# Copy configuration files
-COPY --from=builder /app/config config/
-COPY --from=builder /app/migrations migrations/
+# Делаем скрипт исполняемым
+RUN chmod +x wait-and-migrate.sh
 
-# Create non-root user
-RUN addgroup -g 1001 -S appgroup && \
-    adduser -u 1001 -S appuser -G appgroup
+EXPOSE 8081
 
-USER appuser
-
-# Expose port
-EXPOSE 8080
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
-
-# Run the application
-CMD ["./main"]
+# Запускаем миграции и приложение
+CMD ["./wait-and-migrate.sh", "postgres", "5432", "admin", "admin123", "test_system", "/root/migrations", "./auth-service"]

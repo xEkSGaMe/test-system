@@ -1,158 +1,78 @@
 package jwt
 
 import (
-    "errors"
-    "fmt"
-    "os"
-    "time"
-
-    "github.com/golang-jwt/jwt/v5"
+	"fmt"
+	"time"
+	
+	"github.com/golang-jwt/jwt/v5"
 )
 
-var (
-    ErrInvalidToken      = errors.New("невалидный токен")
-    ErrTokenExpired      = errors.New("токен истек")
-    ErrInvalidTokenType  = errors.New("неверный тип токена")
-    ErrMissingSecret     = errors.New("отсутствует JWT_SECRET")
-)
+type Manager struct {
+	secret     []byte
+	expiryTime time.Duration
+}
 
 type Claims struct {
-    UserID      string   `json:"user_id"`
-    Email       string   `json:"email"`
-    Permissions []string `json:"permissions,omitempty"`
-    Roles       []string `json:"roles,omitempty"`
-    Type        string   `json:"type"`
-    jwt.RegisteredClaims
+	UserID int    `json:"user_id"`
+	Email  string `json:"email"`
+	Role   string `json:"role"`
+	jwt.RegisteredClaims
 }
 
-type User struct {
-    ID          string
-    Email       string
-    Roles       []string
-    Permissions []string
+func NewManager(secret string, expiryTime time.Duration) *Manager {
+	return &Manager{
+		secret:     []byte(secret),
+		expiryTime: expiryTime,
+	}
 }
 
-type JWTManager struct {
-    secret               []byte
-    accessTokenExpire    time.Duration
-    refreshTokenExpire   time.Duration
+func (m *Manager) GenerateToken(userID int, email, role string) (string, int, error) {
+	expiresAt := time.Now().Add(m.expiryTime)
+	
+	claims := &Claims{
+		UserID: userID,
+		Email:  email,
+		Role:   role,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(expiresAt),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			Subject:   fmt.Sprintf("%d", userID),
+			Issuer:    "auth-service",
+		},
+	}
+	
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString(m.secret)
+	if err != nil {
+		return "", 0, fmt.Errorf("failed to sign token: %w", err)
+	}
+	
+	// Возвращаем время жизни в секундах
+	expiresIn := int(m.expiryTime.Seconds())
+	return tokenString, expiresIn, nil
 }
 
-func NewJWTManager() (*JWTManager, error) {
-    secret := os.Getenv("JWT_SECRET")
-    if len(secret) < 32 {
-        return nil, ErrMissingSecret
-    }
-
-    accessExpire := 1 * time.Minute
-    if envExpire := os.Getenv("ACCESS_TOKEN_EXPIRE"); envExpire != "" {
-        if dur, err := time.ParseDuration(envExpire); err == nil {
-            accessExpire = dur
-        }
-    }
-
-    refreshExpire := 7 * 24 * time.Hour
-    if envExpire := os.Getenv("REFRESH_TOKEN_EXPIRE"); envExpire != "" {
-        if dur, err := time.ParseDuration(envExpire); err == nil {
-            refreshExpire = dur
-        }
-    }
-
-    return &JWTManager{
-        secret:             []byte(secret),
-        accessTokenExpire:  accessExpire,
-        refreshTokenExpire: refreshExpire,
-    }, nil
-}
-
-func (m *JWTManager) GenerateAccessToken(user *User) (string, error) {
-    claims := &Claims{
-        UserID:      user.ID,
-        Email:       user.Email,
-        Permissions: user.Permissions,
-        Roles:       user.Roles,
-        Type:        "access",
-        RegisteredClaims: jwt.RegisteredClaims{
-            ExpiresAt: jwt.NewNumericDate(time.Now().Add(m.accessTokenExpire)),
-            IssuedAt:  jwt.NewNumericDate(time.Now()),
-        },
-    }
-
-    token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-    return token.SignedString(m.secret)
-}
-
-func (m *JWTManager) GenerateRefreshToken(user *User) (string, error) {
-    claims := &Claims{
-        UserID: user.ID,
-        Email:  user.Email,
-        Type:   "refresh",
-        RegisteredClaims: jwt.RegisteredClaims{
-            ExpiresAt: jwt.NewNumericDate(time.Now().Add(m.refreshTokenExpire)),
-            IssuedAt:  jwt.NewNumericDate(time.Now()),
-        },
-    }
-
-    token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-    return token.SignedString(m.secret)
-}
-
-func (m *JWTManager) ParseToken(tokenString string) (*Claims, error) {
-    token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-        if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-            return nil, fmt.Errorf("неожиданный метод подписи: %v", token.Header["alg"])
-        }
-        return m.secret, nil
-    })
-
-    if err != nil {
-        return nil, ErrInvalidToken
-    }
-
-    if claims, ok := token.Claims.(*Claims); ok && token.Valid {
-        return claims, nil
-    }
-
-    return nil, ErrInvalidToken
-}
-
-func (m *JWTManager) ValidateToken(tokenString string) (bool, *Claims) {
-    claims, err := m.ParseToken(tokenString)
-    if err != nil {
-        return false, nil
-    }
-
-    if time.Now().After(claims.ExpiresAt.Time) {
-        return false, nil
-    }
-
-    return true, claims
-}
-
-func (m *JWTManager) RefreshTokens(refreshToken string) (string, string, error) {
-    claims, err := m.ParseToken(refreshToken)
-    if err != nil {
-        return "", "", err
-    }
-
-    if claims.Type != "refresh" {
-        return "", "", ErrInvalidTokenType
-    }
-
-    user := &User{
-        ID:    claims.UserID,
-        Email: claims.Email,
-    }
-
-    newAccessToken, err := m.GenerateAccessToken(user)
-    if err != nil {
-        return "", "", err
-    }
-
-    newRefreshToken, err := m.GenerateRefreshToken(user)
-    if err != nil {
-        return "", "", err
-    }
-
-    return newAccessToken, newRefreshToken, nil
+func (m *Manager) ValidateToken(tokenString string) (*Claims, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+		// Проверяем алгоритм подписи
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return m.secret, nil
+	})
+	
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse token: %w", err)
+	}
+	
+	if !token.Valid {
+		return nil, fmt.Errorf("invalid token")
+	}
+	
+	claims, ok := token.Claims.(*Claims)
+	if !ok {
+		return nil, fmt.Errorf("invalid token claims")
+	}
+	
+	return claims, nil
 }
