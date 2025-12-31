@@ -7,11 +7,19 @@ import (
 	"time"
 )
 
+type OAuthProvider struct {
+	ClientID     string
+	ClientSecret string
+	RedirectURL  string
+}
+
 type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
 	Redis    RedisConfig
 	JWT      JWTConfig
+	Yandex   OAuthProvider
+	GitHub   OAuthProvider
 }
 
 type ServerConfig struct {
@@ -63,6 +71,16 @@ func LoadConfig() *Config {
 		JWT: JWTConfig{
 			Secret:     getEnv("JWT_SECRET", "your-super-secret-jwt-key-change-this-in-production"),
 			ExpiryTime: 15 * time.Minute,
+		},
+		Yandex: OAuthProvider{
+			ClientID:     getEnv("YANDEX_CLIENT_ID", ""),
+			ClientSecret: getEnv("YANDEX_CLIENT_SECRET", ""),
+			RedirectURL:  getEnv("YANDEX_REDIRECT_URL", "http://localhost:8081/auth/yandex/callback"),
+		},
+		GitHub: OAuthProvider{
+			ClientID:     getEnv("GITHUB_CLIENT_ID", ""),
+			ClientSecret: getEnv("GITHUB_CLIENT_SECRET", ""),
+			RedirectURL:  getEnv("GITHUB_REDIRECT_URL", "http://localhost:8081/auth/github/callback"),
 		},
 	}
 }
