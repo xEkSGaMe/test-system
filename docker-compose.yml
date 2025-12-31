@@ -55,6 +55,9 @@ services:
     container_name: test-system-auth
     ports:
       - "8081:8081"
+      
+    env_file:
+      - .env
     environment:
       # Конфигурация сервера
       PORT: "8081"
