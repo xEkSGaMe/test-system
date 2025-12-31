@@ -20,6 +20,10 @@ import (
 	"test-system/auth/internal/middleware"
 	
 	_ "github.com/lib/pq"
+
+	_ "test-system/auth/docs" // Это сгенерированные файлы Swagger
+	"github.com/swaggo/gin-swagger" // Сам обработчик
+	"github.com/swaggo/files"       // Статические файлы для него
 )
 
 func main() {
@@ -43,12 +47,23 @@ func main() {
 	defer redisMgr.Close()
 	
 	log.Println("✅ Successfully connected to Redis")
-	
+
+	// 1. Сначала инициализируем менеджер JWT (без него ничего не заработает)
 	jwtMgr := jwt.NewManager(cfg.JWT.Secret, cfg.JWT.ExpiryTime)
+
+	// 2. Инициализируем репозитории
 	userRepo := repositories.NewUserRepository(db)
 	refreshRepo := repositories.NewRefreshTokenRepository(db)
+
+	// 3. Создаем AuthService (передаем jwtMgr, который создали в пункте 1)
 	authService := services.NewAuthService(userRepo, jwtMgr, redisMgr, refreshRepo)
-	authHandler := handlers.NewAuthHandler(authService)
+
+	// 4. Создаем OAuthService (передаем authService)
+	oauthService := services.NewOAuthService(cfg, authService)
+
+	// 5. Создаем финальный Handler
+	authHandler := handlers.NewAuthHandler(authService, oauthService)
+	
 
 	
 	if cfg.Server.Env == "production" {
@@ -78,6 +93,9 @@ func main() {
 		})
 	})
 	
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	router.GET("/auth/yandex/login", authHandler.YandexLogin)
+	router.GET("/auth/yandex/callback", authHandler.YandexCallback)
 	router.POST("/auth/register", authHandler.Register)
 	router.POST("/auth/login", authHandler.Login)
 	router.POST("/auth/validate", authHandler.Validate)

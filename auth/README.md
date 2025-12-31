@@ -1,202 +1,96 @@
-Auth Service (Go)
+============================================================
 
-📌 Описание
+&nbsp;               AUTH SERVICE (GO) — СТАТУС ПРОЕКТА
 
-Auth‑сервис отвечает за аутентификацию и авторизацию пользователей в системе тестирования.
+&nbsp;                   Дата: 31.12.2025
 
-Он реализован на Go, использует PostgreSQL и Redis для хранения данных и поддерживает JWT‑токены с ролями.
+============================================================
 
-Все запросы к Core API проходят через проверку прав, выданных этим модулем.
 
 
+\[!] ОПИСАНИЕ
 
-🚀 Возможности
+Сервис аутентификации на Go (Gin). Работает с PostgreSQL и Redis.
 
-Регистрация новых пользователей (authregister)
+Обеспечивает доступ к Core API (C++) через JWT-токены.
 
 
 
-Логин и выдача пары токенов (access\_token, refresh\_token)
+\[!] ВОЗМОЖНОСТИ
 
+-- OAuth2 Yandex: Вход через Яндекс аккаунт (Работает)
 
+-- Роли: Авто-присвоение роли "student" при входе через OAuth
 
-Валидация токена (authvalidate)
+-- JWT: Выдача пары access\_token (15м) и refresh\_token (24ч)
 
+-- Security: Инвалидация через Redis Blacklist (В разработке)
 
 
-Обновление токена (authrefresh)
 
+\[!] СПИСОК ЭНДПОИНТОВ
 
+------------------------------------------------------------
 
-Выход и инвалидирование токена (authlogout)
+МЕТОД  | ПУТЬ                    | ОПИСАНИЕ
 
+------------------------------------------------------------
 
+GET    | /auth/yandex/login      | Вход через Яндекс
 
-Получение информации о текущем пользователе (authme)
+GET    | /auth/yandex/callback   | Коллбэк от Яндекса
 
+POST   | /auth/register          | Обычная регистрация
 
+POST   | /auth/login             | Обычный логин
 
-Хранение refresh‑токенов и blacklist в PostgreSQL
+POST   | /auth/refresh           | Обновление токенов (План)
 
+POST   | /auth/logout            | Выход/Blacklist (План)
 
+GET    | /auth/me                | Данные профиля
 
-Поддержка Redis для масштабируемого хранения сессий
+------------------------------------------------------------
 
 
 
-JWT‑токены содержат user\_id, email, role
+\[!] СТАТУС ВЫПОЛНЕНИЯ
 
+\[+] \[100%] OAuth2 (Yandex) — Интеграция завершена
 
+\[+] \[100%] База данных — Миграции и связь с Redis настроены
 
-⚙️ Технологии
+\[+] \[100%] Контейнеры — Docker запущен на порту 8081
 
-Go 1.23+
+\[!] \[ 80%] Сессии — Нужно доделать эндпоинт /refresh
 
+\[!] \[ 50%] Документация — Нужно наполнить Swagger
 
 
-Gin (HTTP‑фреймворк)
 
+\[!] НОВЫЕ ПЕРЕМЕННЫЕ .ENV
 
+-- YANDEX\_CLIENT\_ID: (Указан в файле)
 
-PostgreSQL (хранение пользователей и токенов)
+-- YANDEX\_CLIENT\_SECRET: (Указан в файле)
 
+-- YANDEX\_REDIRECT\_URL: http://localhost:8081/auth/yandex/callback
 
 
-Redis (сессии, кэш)
 
+\[!] ПЛАН НА ЯНВАРЬ:
 
+1\. Дописать логику в POST /auth/refresh.
 
-jwt‑go  jwt‑cpp (работа с токенами)
+2\. Подключить Middleware для проверки Redis Blacklist.
 
+3\. Настроить Swagger (генерация документации).
 
 
-Docker Compose (оркестрация сервисов)
 
+============================================================
 
+&nbsp;             КАПИТАН КОМАНДЫ: МЕДЖИТ (DONE)
 
-📂 Структура
-
-Код
-
-auth
-
-├── cmd                # точка входа main.go
-
-├── internal
-
-│   ├── handlers       # HTTP‑эндпоинты
-
-│   ├── services       # бизнес‑логика
-
-│   ├── repositories   # работа с БД
-
-│   ├── models         # структуры данных
-
-│   └── utils          # вспомогательные функции
-
-├── migrations         # SQL‑миграции
-
-├── Dockerfile
-
-└── docker-compose.yml
-
-🔑 Переменные окружения
-
-POSTGRES\_HOST — хост PostgreSQL
-
-
-
-POSTGRES\_USER — пользователь БД
-
-
-
-POSTGRES\_PASSWORD — пароль БД
-
-
-
-POSTGRES\_DB — имя базы
-
-
-
-REDIS\_HOST — хост Redis
-
-
-
-JWT\_SECRET — секрет для подписи JWT
-
-
-
-GIN\_MODE — режим работы (debug или release)
-
-
-
-📡 Эндпоинты
-
-Метод	Путь	Описание
-
-GET	health	Проверка статуса сервиса
-
-POST	authregister	Регистрация нового пользователя
-
-POST	authlogin	Логин, выдача токенов
-
-POST	authvalidate	Проверка валидности access‑токена
-
-POST	authrefresh	Обновление токенов
-
-POST	authlogout	Выход, инвалидирование токена
-
-GET	authme	Информация о текущем пользователе
-
-🧪 Примеры запросов
-
-Регистрация
-
-bash
-
-curl -X POST httplocalhost8081authregister 
-
-&nbsp; -H Content-Type applicationjson 
-
-&nbsp; -d '{emailuser@example.com,passwordPassw0rd!,full\_nameUser One}'
-
-Логин
-
-bash
-
-curl -X POST httplocalhost8081authlogin 
-
-&nbsp; -H Content-Type applicationjson 
-
-&nbsp; -d '{emailuser@example.com,passwordPassw0rd!}'
-
-Refresh
-
-bash
-
-curl -X POST httplocalhost8081authrefresh 
-
-&nbsp; -H Content-Type applicationjson 
-
-&nbsp; -d '{refresh\_tokenrefresh\_token}'
-
-📈 Статус выполнения
-
-✅ Регистрация, логин, JWT
-
-
-
-✅ Refresh‑токены и logout
-
-
-
-✅ PostgreSQL + Redis интеграция
-
-
-
-⚠️ Документация SwaggerOpenAPI (в процессе)
-
-
-
-❌ OAuth2 (GoogleGitHub) — планируется
+============================================================
 
