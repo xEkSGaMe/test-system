@@ -49,10 +49,11 @@ func (r *RefreshTokenRepository) FindValid(ctx context.Context, rawToken string)
     return &rt, nil
 }
 
-func (r *RefreshTokenRepository) Invalidate(ctx context.Context, rawToken string) error {
+func (r *RefreshTokenRepository) Delete(ctx context.Context, rawToken string) error {
     _, err := r.db.ExecContext(ctx,
         `DELETE FROM refresh_tokens WHERE token_hash = $1`,
         hashToken(rawToken),
     )
     return err
+    
 }
