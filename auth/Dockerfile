@@ -26,15 +26,16 @@ RUN apk --no-cache add ca-certificates postgresql-client bash
 
 WORKDIR /root/
 
-# Копируем бинарник из builder
 COPY --from=builder /app/auth-service .
 COPY --from=builder /app/wait-and-migrate.sh .
 COPY --from=builder /app/migrations ./migrations
 
-# Делаем скрипт исполняемым
-RUN chmod +x wait-and-migrate.sh
+# Добавляем принудительную конвертацию строк на всякий случай
+RUN apk add --no-cache dos2unix && \
+    dos2unix wait-and-migrate.sh && \
+    chmod +x wait-and-migrate.sh
 
 EXPOSE 8081
 
-# Запускаем миграции и приложение
-CMD ["./wait-and-migrate.sh", "postgres", "5432", "admin", "admin123", "test_system", "/root/migrations", "./auth-service"]
+# Используй полный путь, если ./ не срабатывает
+CMD ["./wait-and-migrate.sh", "postgres", "5432", "admin", "admin123", "test_system", "./migrations", "./auth-service"]

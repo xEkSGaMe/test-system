@@ -96,6 +96,8 @@ func main() {
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.GET("/auth/yandex/login", authHandler.YandexLogin)
 	router.GET("/auth/yandex/callback", authHandler.YandexCallback)
+	router.GET("/auth/github/login", authHandler.GitHubLogin)
+	router.GET("/auth/github/callback", authHandler.GitHubCallback)
 	router.POST("/auth/register", authHandler.Register)
 	router.POST("/auth/login", authHandler.Login)
 	router.POST("/auth/validate", authHandler.Validate)

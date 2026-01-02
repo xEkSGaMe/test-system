@@ -201,6 +201,39 @@ func (h *AuthHandler) Me(c *gin.Context) {
 	})
 }
 
+// GitHubLogin godoc
+// @Summary Login with GitHub
+// @Tags auth
+// @Router /auth/github/login [get]
+func (h *AuthHandler) GitHubLogin(c *gin.Context) {
+	url := h.oauthService.GetGitHubAuthURL()
+	c.Redirect(http.StatusTemporaryRedirect, url)
+}
+
+// GitHubCallback godoc
+// @Summary GitHub OAuth2 Callback
+// @Tags auth
+// @Router /auth/github/callback [get]
+func (h *AuthHandler) GitHubCallback(c *gin.Context) {
+	code := c.Query("code")
+	if code == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "code is required"})
+		return
+	}
+
+	user, pair, err := h.oauthService.HandleGitHubCallback(c.Request.Context(), code)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"user":    user,
+		"auth":    pair,
+	})
+}
+
 func extractToken(c *gin.Context) string {
 	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" {

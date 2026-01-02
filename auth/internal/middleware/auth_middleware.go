@@ -22,6 +22,15 @@ func AuthMiddleware(authService *services.AuthService) gin.HandlerFunc {
 		}
 		
 		token := strings.TrimPrefix(authHeader, "Bearer ")
+		blacklisted, _ := authService.IsTokenBlacklisted(c.Request.Context(), token)
+        if blacklisted {
+            c.JSON(http.StatusUnauthorized, gin.H{
+                "success": false, 
+                "error": "token is revoked (logged out)",
+            })
+            c.Abort()
+            return
+        }
 		if token == authHeader {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"success": false,

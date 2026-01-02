@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"time"
+	"crypto/rand"
+	"encoding/hex"
 
 	"test-system/auth/internal/auth/jwt"
 	"test-system/auth/internal/models"
@@ -145,6 +147,10 @@ func (s *AuthService) Logout(ctx context.Context, token string) error {
 	return nil
 }
 
+func (s *AuthService) IsTokenBlacklisted(ctx context.Context, token string) (bool, error) {
+	return s.redisMgr.IsTokenBlacklisted(ctx, token)
+}
+
 func (s *AuthService) RefreshToken(ctx context.Context, rawRefresh string) (*TokenPair, error) {
 	rt, err := s.refreshRepo.FindValid(ctx, rawRefresh)
 	if err != nil || rt == nil {
@@ -161,17 +167,23 @@ func (s *AuthService) RefreshToken(ctx context.Context, rawRefresh string) (*Tok
 		return nil, err
 	}
 
-	_ = s.refreshRepo.Invalidate(ctx, rawRefresh)
+	// Генерация нового рефреш-токена
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil {
+		return nil, err
+	}
+	newRefreshToken := hex.EncodeToString(b)
 
-	newRefresh := utils.GenerateSecureToken(32)
-	if err := s.refreshRepo.Create(ctx, user.ID, newRefresh, time.Now().Add(7*24*time.Hour)); err != nil {
+	_ = s.refreshRepo.Delete(ctx, rawRefresh) 
+
+	err = s.refreshRepo.Create(ctx, user.ID, newRefreshToken, time.Now().Add(24*time.Hour*7))
+	if err != nil {
 		return nil, err
 	}
 
-	// Тут важно: возвращаем только ПАРУ токенов, без юзера
 	return &TokenPair{
 		AccessToken:  accessToken,
-		RefreshToken: newRefresh,
+		RefreshToken: newRefreshToken,
 		TokenType:    "Bearer",
 		ExpiresIn:    expiresIn,
 	}, nil
