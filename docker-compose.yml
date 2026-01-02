@@ -48,48 +48,33 @@ services:
       - test-network
     restart: unless-stopped
 
-  # Auth Service (Go) - ТЕПЕРЬ РЕАЛЬНЫЙ СЕРВИС (ОБНОВЛЯЕМ ТОЛЬКО ЭТУ ЧАСТЬ)
   auth-service:
     build:
       context: ./auth
     container_name: test-system-auth
     ports:
       - "8081:8081"
-      
     env_file:
       - .env
     environment:
-      # Конфигурация сервера
       PORT: "8081"
       ENV: "development"
-      
-      # Конфигурация базы данных
+      # Данные должны СОВПАДАТЬ с блоком postgres выше
       DB_HOST: "postgres"
       DB_PORT: "5432"
       DB_NAME: "test_system"
       DB_USER: "admin"
-      DB_PASSWORD: "admin123"
+      DB_PASSWORD: "admin123" # Исправил с admin_password на admin123
       DB_SSL_MODE: "disable"
-      
-      # Конфигурация Redis
       REDIS_HOST: "redis"
       REDIS_PORT: "6379"
-      REDIS_PASSWORD: ""
-      REDIS_DB: "0"
-      
-      # Конфигурация JWT
-      JWT_SECRET: "your-super-secret-jwt-key-change-this-in-production"
-      JWT_EXPIRY: "15m"
-      
+      JWT_SECRET: "your-super-secret-jwt-key"
     depends_on:
       - postgres
       - redis
     networks:
       - test-network
-    restart: unless-stopped
-    volumes:
-      - ./auth/migrations:/migrations  # Монтируем миграции в контейнер
-
+      
   # Core Service (C++)
   core-service:
     build:
