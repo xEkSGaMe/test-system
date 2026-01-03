@@ -24,7 +24,11 @@
 
 #include <nlohmann/json.hpp>
 #include <jwt-cpp/jwt.h>
-#include <jwt-cpp/traits/nlohmann-json/traits.h> // Обязательно добавьте это!
+#include <jwt-cpp/traits/nlohmann-json/traits.h>
+#include "utils/HttpClient.hpp"
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
 
 struct AuthInfo {
     int user_id;
@@ -36,60 +40,91 @@ std::optional<AuthInfo> verify_jwt(const std::string& token) {
         Logger::info("Debug token used", {{"user_id", "1"}, {"role", "admin"}});
         return AuthInfo{1, "admin"}; 
     }
+    
+    // Пробуем сначала локальную проверку с JWT_SECRET
     try {
         const char* secret_env = std::getenv("JWT_SECRET");
         std::string secret = secret_env ? secret_env : "";
         
-        // Указываем тип traits для jwt-cpp
-        using traits = jwt::traits::nlohmann_json;
-
-        // Теперь decode и verify требуют указания <traits>
-        auto decoded = jwt::decode<traits>(token);
-
-        auto verifier = jwt::verify<traits>()
-            .allow_algorithm(jwt::algorithm::hs256{secret})
-            .with_issuer("auth-service");
-
-        verifier.verify(decoded);
-
-        // Получаем claim "sub" как строку и пытаемся преобразовать в int
-        int user_id = 0;
-        try {
-            std::string sub_str = decoded.get_payload_claim("sub").as_string();
-            user_id = std::stoi(sub_str);
-        } catch (const std::exception& e) {
-            LoggingUtils::logAuthFailure("Invalid sub claim: " + std::string(e.what()), token.substr(0, 10) + "...");
+        if (!secret.empty()) {
+            using traits = jwt::traits::nlohmann_json;
+            auto decoded = jwt::decode<traits>(token);
+            
+            auto verifier = jwt::verify<traits>()
+                .allow_algorithm(jwt::algorithm::hs256{secret})
+                .with_issuer("auth-service");
+            
+            verifier.verify(decoded);
+            
+            int user_id = 0;
+            try {
+                std::string sub_str = decoded.get_payload_claim("sub").as_string();
+                user_id = std::stoi(sub_str);
+            } catch (const std::exception& e) {
+                LoggingUtils::logAuthFailure("Invalid sub claim: " + std::string(e.what()), token.substr(0, 10) + "...");
+                return std::nullopt;
+            }
+            
+            std::string role;
+            try {
+                role = decoded.get_payload_claim("role").as_string();
+            } catch (const std::exception&) {
+                role = "student";
+            }
+            
+            Logger::info("JWT verified locally", {
+                {"user_id", std::to_string(user_id)},
+                {"role", role},
+                {"token_prefix", token.substr(0, 10) + "..."}
+            });
+            
+            return AuthInfo{user_id, role};
+        }
+    } catch (const std::exception& e) {
+        // Локальная проверка не удалась, пробуем через auth-service
+        Logger::warning("Local JWT verification failed, trying auth-service", {
+            {"error", e.what()}
+        });
+    }
+    
+    // Если локальная проверка не удалась, пробуем через auth-service
+    try {
+        auto response_opt = HttpClient::validateTokenWithAuthService(token);
+        
+        if (!response_opt) {
+            LoggingUtils::logAuthFailure("Auth service unavailable or no response", token.substr(0, 10) + "...");
             return std::nullopt;
         }
-
-        // role как строка (по умолчанию student)
-        std::string role;
+        
+        std::string response = *response_opt;
+        
         try {
-            role = decoded.get_payload_claim("role").as_string();
-        } catch (const std::exception&) {
-            role = "student";
+            json j = json::parse(response);
+            
+            if (j.contains("valid") && j["valid"].get<bool>()) {
+                int user_id = j["user_id"].get<int>();
+                std::string role = j.contains("role") ? j["role"].get<std::string>() : "student";
+                
+                Logger::info("Token validated by auth-service", {
+                    {"user_id", std::to_string(user_id)},
+                    {"role", role}
+                });
+                
+                return AuthInfo{user_id, role};
+            } else {
+                LoggingUtils::logAuthFailure("Auth service returned invalid", token.substr(0, 10) + "...");
+                return std::nullopt;
+            }
+        } catch (const std::exception& e) {
+            LoggingUtils::logAuthFailure("Failed to parse auth service response: " + std::string(e.what()), token.substr(0, 10) + "...");
+            return std::nullopt;
         }
-
-        // Логируем успешную авторизацию
-        Logger::info("JWT verified successfully", {
-            {"user_id", std::to_string(user_id)},
-            {"role", role},
-            {"token_prefix", token.substr(0, 10) + "..."}
-        });
-
-        verifier.verify(decoded);
-
-        return AuthInfo{user_id, role};
-
+        
     } catch (const std::exception& e) {
-        // Ловим все ошибки (и jwt, и stoi, и прочие) здесь
         LoggingUtils::logAuthFailure(
-            std::string("Verification failed: ") + e.what(), 
+            std::string("Auth service call failed: ") + e.what(), 
             token.substr(0, 10) + "..."
         );
-        return std::nullopt;
-    } catch (...) {
-        LoggingUtils::logAuthFailure("Unknown error during verification", token.substr(0, 10) + "...");
         return std::nullopt;
     }
 }
