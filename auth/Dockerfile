@@ -18,8 +18,8 @@ COPY . .
 RUN CGO_ENABLED=1 GOOS=linux go build -o auth-service ./cmd
 
 # Финальный образ
-# ИЗМЕНЯЕМ: alpine:latest → alpine:3.20 (для совместимости)
-FROM alpine:3.20
+# ИЗМЕНЯЕМ: alpine:3.20 → alpine:3.18 (для совместимости)
+FROM alpine:3.18
 
 # Устанавливаем psql для выполнения миграций
 RUN apk --no-cache add ca-certificates postgresql-client bash
