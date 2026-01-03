@@ -1,9 +1,8 @@
-# docker-compose.yml (ОБНОВЛЯЕМ ТОЛЬКО auth-service, остальное оставляем!)
 # Docker Compose для тестовой системы
 # Версии выбраны для совместимости с процессорами без AVX
 
 services:
-  # PostgreSQL - используем более стабильную версию (НЕ ТРОГАЕМ)
+  # PostgreSQL - используем более стабильную версию
   postgres:
     image: postgres:13-alpine
     environment:
@@ -19,7 +18,7 @@ services:
       - test-network
     restart: unless-stopped
 
-  # MongoDB - версия 4.4 не требует AVX (НЕ ТРОГАЕМ)
+  # MongoDB - версия 4.4 не требует AVX
   mongodb:
     image: mongo:4.4
     container_name: test-system-mongodb
@@ -35,7 +34,7 @@ services:
       - test-network
     restart: unless-stopped
 
-  # Redis - стабильная версия (НЕ ТРОГАЕМ)
+  # Redis - стабильная версия
   redis:
     image: redis:6.2-alpine
     container_name: test-system-redis
@@ -64,28 +63,32 @@ services:
       DB_PORT: "5432"
       DB_NAME: "test_system"
       DB_USER: "admin"
-      DB_PASSWORD: "admin123" # Исправил с admin_password на admin123
+      DB_PASSWORD: "admin123"
       DB_SSL_MODE: "disable"
       REDIS_HOST: "redis"
       REDIS_PORT: "6379"
-      JWT_SECRET: "your-super-secret-jwt-key"
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key}  # ← БЕРЕТ ИЗ .env
     depends_on:
       - postgres
       - redis
     networks:
       - test-network
       
-  # Core Service (C++)
+  # Core Service (C++) - ОБНОВЛЯЕМ ЭТОТ БЛОК!
   core-service:
     build:
       context: ./core
     container_name: test-system-core
     environment:
       DATABASE_URL: postgres://admin:admin123@postgres:5432/test_system
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key}  # ← ДОБАВИТЬ
+      AUTH_SERVICE_URL: http://auth-service:8081  # ← ДОБАВИТЬ
+      LOG_LEVEL: info
     ports:
       - "8080:8080"
     depends_on:
       - postgres
+      - auth-service  # ← ДОБАВИТЬ ЗАВИСИМОСТЬ ОТ AUTH
     networks:
       - test-network
     restart: unless-stopped
