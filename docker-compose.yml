@@ -1,10 +1,10 @@
-# Docker Compose для тестовой системы
-# Версии выбраны для совместимости с процессорами без AVX
+version: '3.8'
 
 services:
-  # PostgreSQL - используем более стабильную версию
+  # База данных пользователей и тестов
   postgres:
     image: postgres:13-alpine
+    container_name: test-system-postgres
     environment:
       POSTGRES_DB: test_system
       POSTGRES_USER: admin
@@ -18,23 +18,7 @@ services:
       - test-network
     restart: unless-stopped
 
-  # MongoDB - версия 4.4 не требует AVX
-  mongodb:
-    image: mongo:4.4
-    container_name: test-system-mongodb
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: admin123
-      MONGO_INITDB_DATABASE: test_system
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodb_data:/data/db
-    networks:
-      - test-network
-    restart: unless-stopped
-
-  # Redis - стабильная версия
+  # Redis для сессий и бота (оставляем один общий)
   redis:
     image: redis:6.2-alpine
     container_name: test-system-redis
@@ -47,6 +31,7 @@ services:
       - test-network
     restart: unless-stopped
 
+  # Сервис авторизации (Go)
   auth-service:
     build:
       context: ./auth
@@ -57,45 +42,61 @@ services:
       - .env
     environment:
       PORT: "8081"
-      ENV: "development"
-      # Данные должны СОВПАДАТЬ с блоком postgres выше
       DB_HOST: "postgres"
       DB_PORT: "5432"
       DB_NAME: "test_system"
       DB_USER: "admin"
       DB_PASSWORD: "admin123"
-      DB_SSL_MODE: "disable"
       REDIS_HOST: "redis"
       REDIS_PORT: "6379"
-      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key}  # ← БЕРЕТ ИЗ .env
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       - postgres
       - redis
     networks:
       - test-network
-      
-  # Core Service (C++) - ОБНОВЛЯЕМ ЭТОТ БЛОК!
+
+  # Основной API (C++)
   core-service:
     build:
       context: ./core
     container_name: test-system-core
-    environment:
-      DATABASE_URL: postgres://admin:admin123@postgres:5432/test_system
-      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key}  # ← ДОБАВИТЬ
-      AUTH_SERVICE_URL: http://auth-service:8081  # ← ДОБАВИТЬ
-      LOG_LEVEL: info
     ports:
       - "8080:8080"
+    environment:
+      DATABASE_URL: postgres://admin:admin123@postgres:5432/test_system
+      JWT_SECRET: ${JWT_SECRET}
+      AUTH_SERVICE_URL: http://auth-service:8081
     depends_on:
       - postgres
-      - auth-service  # ← ДОБАВИТЬ ЗАВИСИМОСТЬ ОТ AUTH
+      - auth-service
+    networks:
+      - test-network
+    restart: unless-stopped
+
+  # Telegram Бот (Python)
+  bot:
+    build:
+      context: ./telegram-bot
+    container_name: test-system-bot
+    env_file:
+      - .env
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN}
+      - AUTH_API_URL=http://auth-service:8081
+      - CORE_API_URL=http://core-service:8080
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - auth-service
+      - core-service
+      - redis
     networks:
       - test-network
     restart: unless-stopped
 
 volumes:
   postgres_data:
-  mongodb_data:
   redis_data:
 
 networks:
