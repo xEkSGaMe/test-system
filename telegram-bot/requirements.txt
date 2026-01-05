@@ -1,4 +1,4 @@
-python-telegram-bot[job-queue]==20.3
-redis==4.5.4
-requests==2.31.0
+aiogram==3.3.0
+redis==5.0.1
+aiohttp==3.9.1
 python-dotenv==1.0.0

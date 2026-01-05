@@ -1,7 +1,0 @@
-{
-  "name": "telegram-bot",
-  "version": "1.0.0",
-  "scripts": {
-    "start": "echo 'Telegram bot placeholder' && tail -f /dev/null"
-  }
-}
