@@ -34,10 +34,10 @@ func (h *AuthHandler) YandexLogin(c *gin.Context) {
 
 // YandexCallback godoc
 // @Summary Yandex OAuth2 Callback
-// @Description Handles Yandex redirection, creates user if not exists and returns tokens
+// @Description Handles Yandex redirection, creates user if not exists and redirects to Telegram Bot
 // @Tags auth
 // @Param code query string true "OAuth2 Code"
-// @Success 200 {object} map[string]interface{}
+// @Success 302
 // @Router /auth/yandex/callback [get]
 func (h *AuthHandler) YandexCallback(c *gin.Context) {
 	code := c.Query("code")
@@ -46,16 +46,18 @@ func (h *AuthHandler) YandexCallback(c *gin.Context) {
 		return
 	}
 
-	user, tokens, err := h.oauthService.HandleYandexCallback(c.Request.Context(), code)
+	_, tokens, err := h.oauthService.HandleYandexCallback(c.Request.Context(), code)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to authenticate with Yandex: " + err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"user": user,
-		"auth": tokens,
-	})
+	// Ссылка на бота с токеном для deep-linking
+	// Используем AccessToken, чтобы бот сразу его подхватил через команду /start
+	tgRedirect := "https://t.me/TestSystemDevBot?start=" + tokens.AccessToken
+	
+	// Перенаправляем пользователя
+	c.Redirect(http.StatusFound, tgRedirect)
 }
 
 // Register godoc
@@ -212,7 +214,9 @@ func (h *AuthHandler) GitHubLogin(c *gin.Context) {
 
 // GitHubCallback godoc
 // @Summary GitHub OAuth2 Callback
+// @Description Handles GitHub redirection and redirects to Telegram Bot
 // @Tags auth
+// @Success 302
 // @Router /auth/github/callback [get]
 func (h *AuthHandler) GitHubCallback(c *gin.Context) {
 	code := c.Query("code")
@@ -221,17 +225,16 @@ func (h *AuthHandler) GitHubCallback(c *gin.Context) {
 		return
 	}
 
-	user, pair, err := h.oauthService.HandleGitHubCallback(c.Request.Context(), code)
+	_, pair, err := h.oauthService.HandleGitHubCallback(c.Request.Context(), code)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"user":    user,
-		"auth":    pair,
-	})
+	// Аналогичный редирект для GitHub
+	tgRedirect := "https://t.me/TestSystemDevBot?start=" + pair.AccessToken
+	
+	c.Redirect(http.StatusFound, tgRedirect)
 }
 
 func extractToken(c *gin.Context) string {
