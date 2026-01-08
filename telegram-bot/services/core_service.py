@@ -20,7 +20,14 @@ class CoreService:
                         headers=headers
                 ) as response:
                     if response.status == 200:
-                        return await response.json()
+                        result = await response.json()
+                        # Если API возвращает {"data": [...]}, берем список из data
+                        if isinstance(result, dict):
+                            return result.get("data", [])
+                        # Если API возвращает сразу список [...]
+                        return result if isinstance(result, list) else []
+                    
+                    logger.error(f"Core API ошибка {response.status}: {await response.text()}")
         except Exception as e:
             logger.error(f"Ошибка получения тестов: {e}")
         return []

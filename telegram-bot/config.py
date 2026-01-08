@@ -9,14 +9,14 @@ class Config:
 
     # В Docker переменные REDIS_HOST и др. придут из docker-compose.yml
     # Если их нет (запуск без Docker), используем localhost
-    REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
     REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
     REDIS_DB = 0
     SESSION_TTL = 86400
 
     # API URLs - это критично для связи контейнеров
-    AUTH_API_URL = os.getenv("AUTH_API_URL", "http://localhost:8081")
-    CORE_API_URL = os.getenv("CORE_API_URL", "http://localhost:8080")
+    AUTH_API_URL = os.getenv("AUTH_API_URL", "http://auth:8081") 
+    CORE_API_URL = os.getenv("CORE_API_URL", "http://core-api:8080")
+    REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 
     # JWT настройки
     JWT_HEADER = "Authorization"

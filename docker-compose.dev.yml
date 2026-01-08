@@ -1,13 +1,11 @@
+version: "3.9"
+
 services:
   auth-service:
     build: ./auth
     image: auth-service:dev
-    volumes:
-      - ./auth:/app
-      - /app/vendor
     environment:
       - WATCH_FILES=true
-    command: air -c .air.toml
     ports:
       - "8081:8081"
     networks:
@@ -21,8 +19,9 @@ services:
     environment:
       - DEBUG=true
       - CMAKE_BUILD_TYPE=Debug
+      - DATABASE_URL=postgresql://admin:admin123@postgres:5432/test_system
     ports:
-      - "8082:8082"
+      - "8082:8080"
     networks:
       - test-network
 

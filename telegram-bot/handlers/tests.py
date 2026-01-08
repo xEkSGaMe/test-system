@@ -74,6 +74,7 @@ async def start_test(callback: types.CallbackQuery, state: FSMContext):
         answers=[],
         test_title=test.get("title", "Тест")
     )
+    print(f"DEBUG: State set for user {callback.from_user.id}: {await state.get_state()}")
 
     # Показать первый вопрос
     await show_question(callback.message, state)
@@ -81,6 +82,7 @@ async def start_test(callback: types.CallbackQuery, state: FSMContext):
 
 async def show_question(message: types.Message, state: FSMContext):
     """Показать текущий вопрос"""
+    print(f"DEBUG: Showing question for user {message.chat.id}. State: {await state.get_state()}")
     data = await state.get_data()
     questions = data.get("questions", [])
     current = data.get("current_question", 0)
@@ -107,3 +109,52 @@ async def show_question(message: types.Message, state: FSMContext):
         parse_mode="Markdown",
         reply_markup=keyboard
     )
+
+
+@router.callback_query(TestStates.waiting_for_answer, F.data.startswith("answer:"))
+async def handle_answer(callback: types.CallbackQuery, state: FSMContext):
+    print(f"DEBUG: Callback received: {callback.data}. State: {await state.get_state()}. User: {callback.from_user.id}")
+    try:
+        await callback.answer("Ответ принят!")  # Покажет уведомление пользователю (уберёт "часики" и подтвердит)
+        data = await state.get_data()
+        current = data.get("current_question", 0)
+        answers = data.get("answers", [])
+        
+        # 2. Получаем индекс ответа (например, из 'answer:0' вытащит 0)
+        answer_idx = int(callback.data.split(":")[1])
+        answers.append(answer_idx)
+        
+        # 3. Обновляем счетчик вопросов
+        await state.update_data(current_question=current + 1, answers=answers)
+        
+        # 4. Скрываем кнопки текущего вопроса, чтобы не нажимали повторно
+        await callback.message.edit_reply_markup(reply_markup=None)
+        
+        # 5. Вызываем показ следующего вопроса
+        await show_question(callback.message, state)
+    except Exception as e:
+        print(f"ERROR in handle_answer: {str(e)}")  # Логируем ошибку в консоль
+        await callback.answer("Ошибка! Попробуйте заново.")  # Показываем пользователю
+
+
+async def finish_test(message: types.Message, state: FSMContext):
+    """Завершение теста и отправка результатов"""
+    data = await state.get_data()
+    test_id = data.get("test_id")
+    answers = data.get("answers", [])
+    test_title = data.get("test_title", "Тест")
+
+    # Получаем токен для отправки результатов в API
+    session = await redis_client.get_user_session(message.chat.id)
+    
+    # Здесь можно отправить результаты в Core API (POST /attempts)
+    # Но пока просто поздравим пользователя
+    
+    await message.answer(
+        f"🏁 *Тест «{test_title}» завершен!*\n\n"
+        f"Вы ответили на {len(answers)} вопр. Спасибо за участие!",
+        parse_mode="Markdown"
+    )
+    
+    # Сбрасываем состояние
+    await state.clear()

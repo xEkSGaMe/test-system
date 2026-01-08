@@ -4,12 +4,12 @@ project(core-api CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Поиск OpenSSL (обязателен для JWT)
+# Поиск зависимостей (как в вашем Dockerfile)
 find_package(OpenSSL REQUIRED)
-
-# Для nlohmann/json - если не найдет системный, будем использовать встроенный
-# Сначала пробуем найти
-find_package(nlohmann_json 3.10.5 QUIET)
+find_package(PostgreSQL REQUIRED)
+# Библиотека pqxx часто ищется через pkg-config в Linux
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(PQXX REQUIRED libpqxx)
 
 add_executable(core-api
     src/main.cpp
@@ -21,6 +21,7 @@ add_executable(core-api
     src/utils/HttpClient.cpp
 )
 
+# Указываем пути к инклудам (добавил PQXX)
 target_include_directories(core-api PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/src/database
@@ -28,29 +29,19 @@ target_include_directories(core-api PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/services
     ${CMAKE_CURRENT_SOURCE_DIR}/src/utils
     ${OPENSSL_INCLUDE_DIR}
+    ${PQXX_INCLUDE_DIRS}
+    ${PostgreSQL_INCLUDE_DIRS}
 )
 
-# Линкуем всё вместе: pqxx, pq и OpenSSL
+# Линковка: сохраняем ваши зависимости + добавляем то, что нужно для БД
 target_link_libraries(core-api PRIVATE 
-    pqxx 
-    pq 
+    ${PQXX_LIBRARIES}
+    ${PostgreSQL_LIBRARIES}
     OpenSSL::Crypto
     OpenSSL::SSL
+    pthread
 )
 
-# Если nlohmann/json не найден как пакет, добавим как интерфейсную библиотеку
-if(NOT TARGET nlohmann_json::nlohmann_json)
-    message(STATUS "nlohmann_json not found as system package, using local include")
-    # Создаем интерфейсную библиотеку для json
-    add_library(nlohmann_json INTERFACE)
-    target_include_directories(nlohmann_json INTERFACE 
-        ${CMAKE_CURRENT_SOURCE_DIR}/include
-    )
-    target_link_libraries(core-api PRIVATE nlohmann_json)
-else()
-    message(STATUS "Found nlohmann_json as system package")
-    target_link_libraries(core-api PRIVATE nlohmann_json::nlohmann_json)
-endif()
-
-# Для jwt-cpp просто включаем заголовки
+# nlohmann_json у вас в Dockerfile качается в /usr/local/include
+# Поэтому просто разрешаем его находить там
 target_include_directories(core-api PRIVATE /usr/local/include)

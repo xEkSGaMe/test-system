@@ -3,8 +3,8 @@
 
 TestService::TestService(Database& db) : db_(db) {}
 
-std::vector<Test> TestService::list() {
-  pqxx::work tx{db_.connection()};
+std::vector<Test> TestService::getAllTests() { 
+    pqxx::work tx{db_.connection()};
   auto r = tx.exec("SELECT id, title, description FROM tests ORDER BY id ASC");
   std::vector<Test> out;
   out.reserve(r.size());
@@ -41,16 +41,16 @@ std::optional<Test> TestService::get(int id) {
 }
 
 int TestService::create(const std::string& title, const std::optional<std::string>& description) {
-  pqxx::work tx{db_.connection()};
-  // Для NULL используем nullptr во втором параметре
-  auto r = tx.exec_params(
-    "INSERT INTO tests (title, description) VALUES ($1, $2) RETURNING id",
-    title,
-    description.has_value() ? *description : nullptr
-  );
-  int id = r[0]["id"].as<int>();
-  tx.commit();
-  return id;
+    pqxx::work tx{db_.connection()};
+    // Добавляем user_id = 1 (наш админ)
+    auto r = tx.exec_params(
+        "INSERT INTO tests (title, description, user_id) VALUES ($1, $2, 1) RETURNING id",
+        title,
+        description.has_value() ? *description : nullptr
+    );
+    int id = r[0]["id"].as<int>();
+    tx.commit();
+    return id;
 }
 
 bool TestService::update(int id, const std::optional<std::string>& title,

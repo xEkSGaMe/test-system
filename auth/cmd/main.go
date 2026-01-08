@@ -98,6 +98,7 @@ func main() {
 	router.GET("/auth/yandex/callback", authHandler.YandexCallback)
 	router.GET("/auth/github/login", authHandler.GitHubLogin)
 	router.GET("/auth/github/callback", authHandler.GitHubCallback)
+	router.GET("/auth/ticket/:ticket", authHandler.ExchangeTicket)
 	router.POST("/auth/register", authHandler.Register)
 	router.POST("/auth/login", authHandler.Login)
 	router.POST("/auth/validate", authHandler.Validate)

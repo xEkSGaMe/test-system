@@ -1,0 +1,911 @@
+PS C:\Users\Medjit\Documents\Projects\test-system> docker-compose logs -f bot
+time="2026-01-06T14:52:17+03:00" level=warning msg="C:\\Users\\Medjit\\Documents\\Projects\\test-system\\docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+test-system-bot  | ==================================================
+test-system-bot  | ✅ КОНФИГУРАЦИЯ БОТА ЗАГРУЖЕНА:
+test-system-bot  | 🤖 Токен: 7916943118:AAH6...
+test-system-bot  | 🔴 Redis Host: redis
+test-system-bot  | 🔵 Auth API: http://auth-service:8081
+test-system-bot  | 🟢 Core API: http://core-service:8080
+test-system-bot  | ==================================================
+test-system-bot  | 2026-01-06 10:45:31,863 - __main__ - INFO - Проверка токена: 7916943118...
+test-system-bot  | 2026-01-06 10:45:31,893 - __main__ - INFO - 🚀 Запуск бота...
+test-system-bot  | 2026-01-06 10:45:31,894 - aiogram.dispatcher - INFO - Start polling
+test-system-bot  | 2026-01-06 10:45:32,348 - aiogram.dispatcher - INFO - Run polling for bot @TestSystemDevBot id=7916943118 - 'TestSystemBot'
+test-system-bot  | 2026-01-06 10:53:04,647 - aiogram.dispatcher - ERROR - Failed to fetch updates - TelegramNetworkError: HTTP Client says - ServerDisconnectedError: Server disconnected
+test-system-bot  | 2026-01-06 10:53:04,680 - aiogram.dispatcher - WARNING - Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 7916943118)
+test-system-bot  | 2026-01-06 10:56:18,629 - aiogram.dispatcher - INFO - Connection established (tryings = 1, bot id = 7916943118)
+test-system-bot  | 2026-01-06 11:09:24,822 - aiogram.event - INFO - Update id=861005082 is handled. Duration 567 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:09:27,336 - services.api_client - ERROR - Ошибка валидации: 401
+test-system-bot  | 2026-01-06 11:09:27,483 - aiogram.event - INFO - Update id=861005083 is handled. Duration 206 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:09:30,254 - aiogram.event - INFO - Update id=861005084 is handled. Duration 374 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:09:32,860 - services.api_client - INFO - Получен редирект GitHub: https://github.com/login/oauth/authorize?client_id=Ov23liokT4np9bQG3sIT&redirect...
+test-system-bot  | 2026-01-06 11:09:33,185 - aiogram.event - INFO - Update id=861005085 is handled. Duration 333 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:09:41,224 - services.api_client - INFO - Запрос на обмен тикета: http://auth-service:8081/auth/ticket/tk_b402da54227ff63e
+test-system-bot  | 2026-01-06 11:09:41,229 - services.api_client - INFO - Токен успешно получен по тикету
+test-system-bot  | 2026-01-06 11:09:41,554 - aiogram.event - INFO - Update id=861005086 is handled. Duration 468 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:09:50,394 - aiogram.event - INFO - Update id=861005087 is handled. Duration 165 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:09:56,927 - aiogram.event - INFO - Update id=861005088 is handled. Duration 179 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:10:00,070 - aiogram.event - INFO - Update id=861005089 is not handled. Duration 14 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:10:00,070 - aiogram.event - ERROR - Cause exception while process update id=861005089 by bot id=7916943118
+test-system-bot  | NameError: name 'finish_test' is not defined
+test-system-bot  | Traceback (most recent call last):
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 309, in _process_update
+test-system-bot  |     response = await self.feed_update(bot, update, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 158, in feed_update
+test-system-bot  |     response = await self.update.wrap_outer_middleware(
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/middlewares/error.py", line 25, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/middlewares/user_context.py", line 27, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/fsm/middleware.py", line 41, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+test-system-bot  |     return await wrapped_inner(event, kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+test-system-bot  |     return await wrapped()
+test-system-bot  |            ^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 276, in _listen_update
+test-system-bot  |     return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 128, in propagate_event
+test-system-bot  |     return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 123, in _wrapped
+test-system-bot  |     return await self._propagate_event(
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 156, in _propagate_event
+test-system-bot  |     response = await router.propagate_event(update_type=update_type, event=event, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 128, in propagate_event
+test-system-bot  |     return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 123, in _wrapped
+test-system-bot  |     return await self._propagate_event(
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 148, in _propagate_event
+test-system-bot  |     response = await observer.trigger(event, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+test-system-bot  |     return await wrapped_inner(event, kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+test-system-bot  |     return await wrapped()
+test-system-bot  |            ^^^^^^^^^^^^^^^
+test-system-bot  |   File "/app/handlers/tests.py", line 79, in start_test
+test-system-bot  |     await show_question(callback.message, state)
+test-system-bot  |   File "/app/handlers/tests.py", line 90, in show_question
+test-system-bot  |     await finish_test(message, state)
+test-system-bot  |           ^^^^^^^^^^^
+test-system-bot  | NameError: name 'finish_test' is not defined
+test-system-bot  | 2026-01-06 11:10:01,792 - aiogram.event - INFO - Update id=861005090 is not handled. Duration 9 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:10:01,793 - aiogram.event - ERROR - Cause exception while process update id=861005090 by bot id=7916943118
+test-system-bot  | NameError: name 'finish_test' is not defined
+test-system-bot  | Traceback (most recent call last):
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 309, in _process_update
+test-system-bot  |     response = await self.feed_update(bot, update, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 158, in feed_update
+test-system-bot  |     response = await self.update.wrap_outer_middleware(
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/middlewares/error.py", line 25, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/middlewares/user_context.py", line 27, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/fsm/middleware.py", line 41, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+test-system-bot  |     return await wrapped_inner(event, kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+test-system-bot  |     return await wrapped()
+test-system-bot  |            ^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 276, in _listen_update
+test-system-bot  |     return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 128, in propagate_event
+test-system-bot  |     return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 123, in _wrapped
+test-system-bot  |     return await self._propagate_event(
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 156, in _propagate_event
+test-system-bot  |     response = await router.propagate_event(update_type=update_type, event=event, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 128, in propagate_event
+test-system-bot  |     return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 123, in _wrapped
+test-system-bot  |     return await self._propagate_event(
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 148, in _propagate_event
+test-system-bot  |     response = await observer.trigger(event, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+test-system-bot  |     return await wrapped_inner(event, kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+test-system-bot  |     return await wrapped()
+test-system-bot  |            ^^^^^^^^^^^^^^^
+test-system-bot  |   File "/app/handlers/tests.py", line 79, in start_test
+test-system-bot  |     await show_question(callback.message, state)
+test-system-bot  |   File "/app/handlers/tests.py", line 90, in show_question
+test-system-bot  |     await finish_test(message, state)
+test-system-bot  |           ^^^^^^^^^^^
+test-system-bot  | NameError: name 'finish_test' is not defined
+test-system-bot  | 2026-01-06 11:10:02,002 - aiogram.event - INFO - Update id=861005091 is not handled. Duration 11 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:10:02,003 - aiogram.event - ERROR - Cause exception while process update id=861005091 by bot id=7916943118
+test-system-bot  | NameError: name 'finish_test' is not defined
+test-system-bot  | Traceback (most recent call last):
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 309, in _process_update
+test-system-bot  |     response = await self.feed_update(bot, update, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 158, in feed_update
+test-system-bot  |     response = await self.update.wrap_outer_middleware(
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/middlewares/error.py", line 25, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/middlewares/user_context.py", line 27, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/fsm/middleware.py", line 41, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+test-system-bot  |     return await wrapped_inner(event, kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+test-system-bot  |     return await wrapped()
+test-system-bot  |            ^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 276, in _listen_update
+test-system-bot  |     return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 128, in propagate_event
+test-system-bot  |     return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 123, in _wrapped
+test-system-bot  |     return await self._propagate_event(
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 156, in _propagate_event
+test-system-bot  |     response = await router.propagate_event(update_type=update_type, event=event, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 128, in propagate_event
+test-system-bot  |     return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 123, in _wrapped
+test-system-bot  |     return await self._propagate_event(
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 148, in _propagate_event
+test-system-bot  |     response = await observer.trigger(event, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+test-system-bot  |     return await wrapped_inner(event, kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+test-system-bot  |     return await wrapped()
+test-system-bot  |            ^^^^^^^^^^^^^^^
+test-system-bot  |   File "/app/handlers/tests.py", line 79, in start_test
+test-system-bot  |     await show_question(callback.message, state)
+test-system-bot  |   File "/app/handlers/tests.py", line 90, in show_question
+test-system-bot  |     await finish_test(message, state)
+test-system-bot  |           ^^^^^^^^^^^
+test-system-bot  | NameError: name 'finish_test' is not defined
+test-system-bot  | 2026-01-06 11:10:04,415 - aiogram.event - INFO - Update id=861005092 is not handled. Duration 12 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:10:04,415 - aiogram.event - ERROR - Cause exception while process update id=861005092 by bot id=7916943118
+test-system-bot  | NameError: name 'finish_test' is not defined
+test-system-bot  | Traceback (most recent call last):
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 309, in _process_update
+test-system-bot  |     response = await self.feed_update(bot, update, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 158, in feed_update
+test-system-bot  |     response = await self.update.wrap_outer_middleware(
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/middlewares/error.py", line 25, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/middlewares/user_context.py", line 27, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/fsm/middleware.py", line 41, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+test-system-bot  |     return await wrapped_inner(event, kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+test-system-bot  |     return await wrapped()
+test-system-bot  |            ^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 276, in _listen_update
+test-system-bot  |     return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 128, in propagate_event
+test-system-bot  |     return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 123, in _wrapped
+test-system-bot  |     return await self._propagate_event(
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 156, in _propagate_event
+test-system-bot  |     response = await router.propagate_event(update_type=update_type, event=event, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 128, in propagate_event
+test-system-bot  |     return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 123, in _wrapped
+test-system-bot  |     return await self._propagate_event(
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 148, in _propagate_event
+test-system-bot  |     response = await observer.trigger(event, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+test-system-bot  |     return await wrapped_inner(event, kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+test-system-bot  |     return await wrapped()
+test-system-bot  |            ^^^^^^^^^^^^^^^
+test-system-bot  |   File "/app/handlers/tests.py", line 79, in start_test
+test-system-bot  |     await show_question(callback.message, state)
+test-system-bot  |   File "/app/handlers/tests.py", line 90, in show_question
+test-system-bot  |     await finish_test(message, state)
+test-system-bot  |           ^^^^^^^^^^^
+test-system-bot  | NameError: name 'finish_test' is not defined
+test-system-bot  | 2026-01-06 11:10:04,882 - aiogram.event - INFO - Update id=861005093 is not handled. Duration 9 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:10:04,882 - aiogram.event - ERROR - Cause exception while process update id=861005093 by bot id=7916943118
+test-system-bot  | NameError: name 'finish_test' is not defined
+test-system-bot  | Traceback (most recent call last):
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 309, in _process_update
+test-system-bot  |     response = await self.feed_update(bot, update, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 158, in feed_update
+test-system-bot  |     response = await self.update.wrap_outer_middleware(
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/middlewares/error.py", line 25, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/middlewares/user_context.py", line 27, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/fsm/middleware.py", line 41, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+test-system-bot  |     return await wrapped_inner(event, kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+test-system-bot  |     return await wrapped()
+test-system-bot  |            ^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 276, in _listen_update
+test-system-bot  |     return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 128, in propagate_event
+test-system-bot  |     return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 123, in _wrapped
+test-system-bot  |     return await self._propagate_event(
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 156, in _propagate_event
+test-system-bot  |     response = await router.propagate_event(update_type=update_type, event=event, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 128, in propagate_event
+test-system-bot  |     return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 123, in _wrapped
+test-system-bot  |     return await self._propagate_event(
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 148, in _propagate_event
+test-system-bot  |     response = await observer.trigger(event, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+test-system-bot  |     return await wrapped_inner(event, kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+test-system-bot  |     return await wrapped()
+test-system-bot  |            ^^^^^^^^^^^^^^^
+test-system-bot  |   File "/app/handlers/tests.py", line 79, in start_test
+test-system-bot  |     await show_question(callback.message, state)
+test-system-bot  |   File "/app/handlers/tests.py", line 90, in show_question
+test-system-bot  |     await finish_test(message, state)
+test-system-bot  |           ^^^^^^^^^^^
+test-system-bot  | NameError: name 'finish_test' is not defined
+test-system-bot  | 2026-01-06 11:10:05,813 - aiogram.event - INFO - Update id=861005094 is not handled. Duration 9 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:10:05,813 - aiogram.event - ERROR - Cause exception while process update id=861005094 by bot id=7916943118
+test-system-bot  | NameError: name 'finish_test' is not defined
+test-system-bot  | Traceback (most recent call last):
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 309, in _process_update
+test-system-bot  |     response = await self.feed_update(bot, update, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 158, in feed_update
+test-system-bot  |     response = await self.update.wrap_outer_middleware(
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/middlewares/error.py", line 25, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/middlewares/user_context.py", line 27, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/fsm/middleware.py", line 41, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+test-system-bot  |     return await wrapped_inner(event, kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+test-system-bot  |     return await wrapped()
+test-system-bot  |            ^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 276, in _listen_update
+test-system-bot  |     return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 128, in propagate_event
+test-system-bot  |     return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 123, in _wrapped
+test-system-bot  |     return await self._propagate_event(
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 156, in _propagate_event
+test-system-bot  |     response = await router.propagate_event(update_type=update_type, event=event, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 128, in propagate_event
+test-system-bot  |     return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 123, in _wrapped
+test-system-bot  |     return await self._propagate_event(
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 148, in _propagate_event
+test-system-bot  |     response = await observer.trigger(event, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+test-system-bot  |     return await wrapped_inner(event, kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+test-system-bot  |     return await wrapped()
+test-system-bot  |            ^^^^^^^^^^^^^^^
+test-system-bot  |   File "/app/handlers/tests.py", line 79, in start_test
+test-system-bot  |     await show_question(callback.message, state)
+test-system-bot  |   File "/app/handlers/tests.py", line 90, in show_question
+test-system-bot  |     await finish_test(message, state)
+test-system-bot  |           ^^^^^^^^^^^
+test-system-bot  | NameError: name 'finish_test' is not defined
+test-system-bot  | 2026-01-06 11:10:12,217 - aiogram.event - INFO - Update id=861005095 is not handled. Duration 11 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:10:12,217 - aiogram.event - ERROR - Cause exception while process update id=861005095 by bot id=7916943118
+test-system-bot  | NameError: name 'finish_test' is not defined
+test-system-bot  | Traceback (most recent call last):
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 309, in _process_update
+test-system-bot  |     response = await self.feed_update(bot, update, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 158, in feed_update
+test-system-bot  |     response = await self.update.wrap_outer_middleware(
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/middlewares/error.py", line 25, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/middlewares/user_context.py", line 27, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/fsm/middleware.py", line 41, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+test-system-bot  |     return await wrapped_inner(event, kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+test-system-bot  |     return await wrapped()
+test-system-bot  |            ^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 276, in _listen_update
+test-system-bot  |     return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 128, in propagate_event
+test-system-bot  |     return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 123, in _wrapped
+test-system-bot  |     return await self._propagate_event(
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 156, in _propagate_event
+test-system-bot  |     response = await router.propagate_event(update_type=update_type, event=event, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 128, in propagate_event
+test-system-bot  |     return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 123, in _wrapped
+test-system-bot  |     return await self._propagate_event(
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 148, in _propagate_event
+test-system-bot  |     response = await observer.trigger(event, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+test-system-bot  |     return await wrapped_inner(event, kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+test-system-bot  |     return await wrapped()
+test-system-bot  |            ^^^^^^^^^^^^^^^
+test-system-bot  |   File "/app/handlers/tests.py", line 79, in start_test
+test-system-bot  |     await show_question(callback.message, state)
+test-system-bot  |   File "/app/handlers/tests.py", line 90, in show_question
+test-system-bot  |     await finish_test(message, state)
+test-system-bot  |           ^^^^^^^^^^^
+test-system-bot  | NameError: name 'finish_test' is not defined
+test-system-bot  | 2026-01-06 11:10:12,595 - aiogram.event - INFO - Update id=861005096 is not handled. Duration 12 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:10:12,595 - aiogram.event - ERROR - Cause exception while process update id=861005096 by bot id=7916943118
+test-system-bot  | NameError: name 'finish_test' is not defined
+test-system-bot  | Traceback (most recent call last):
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 309, in _process_update
+test-system-bot  |     response = await self.feed_update(bot, update, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 158, in feed_update
+test-system-bot  |     response = await self.update.wrap_outer_middleware(
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/middlewares/error.py", line 25, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/middlewares/user_context.py", line 27, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/fsm/middleware.py", line 41, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+test-system-bot  |     return await wrapped_inner(event, kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+test-system-bot  |     return await wrapped()
+test-system-bot  |            ^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 276, in _listen_update
+test-system-bot  |     return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 128, in propagate_event
+test-system-bot  |     return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 123, in _wrapped
+test-system-bot  |     return await self._propagate_event(
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 156, in _propagate_event
+test-system-bot  |     response = await router.propagate_event(update_type=update_type, event=event, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 128, in propagate_event
+test-system-bot  |     return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 123, in _wrapped
+test-system-bot  |     return await self._propagate_event(
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 148, in _propagate_event
+test-system-bot  |     response = await observer.trigger(event, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+test-system-bot  |     return await wrapped_inner(event, kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+test-system-bot  |     return await wrapped()
+test-system-bot  |            ^^^^^^^^^^^^^^^
+test-system-bot  |   File "/app/handlers/tests.py", line 79, in start_test
+test-system-bot  |     await show_question(callback.message, state)
+test-system-bot  |   File "/app/handlers/tests.py", line 90, in show_question
+test-system-bot  |     await finish_test(message, state)
+test-system-bot  |           ^^^^^^^^^^^
+test-system-bot  | NameError: name 'finish_test' is not defined
+test-system-bot  | 2026-01-06 11:29:07,272 - aiogram.dispatcher - WARNING - Received SIGTERM signal
+test-system-bot  | 2026-01-06 11:29:07,275 - aiogram.dispatcher - INFO - Polling stopped for bot @TestSystemDevBot id=7916943118 - 'TestSystemBot'
+test-system-bot  | 2026-01-06 11:29:07,276 - aiogram.dispatcher - INFO - Polling stopped
+test-system-bot  | 2026-01-06 11:29:10,727 - asyncio - ERROR - Unclosed client session
+test-system-bot  | client_session: <aiohttp.client.ClientSession object at 0x7fbe75f1e910>
+test-system-bot  | ==================================================
+test-system-bot  | ✅ КОНФИГУРАЦИЯ БОТА ЗАГРУЖЕНА:
+test-system-bot  | 🤖 Токен: 7916943118:AAH6...
+test-system-bot  | 🔴 Redis Host: redis
+test-system-bot  | 🔵 Auth API: http://auth-service:8081
+test-system-bot  | 🟢 Core API: http://core-service:8080
+test-system-bot  | ==================================================
+test-system-bot  | 2026-01-06 11:29:14,530 - __main__ - INFO - Проверка токена: 7916943118...
+test-system-bot  | 2026-01-06 11:29:14,555 - __main__ - INFO - 🚀 Запуск бота...
+test-system-bot  | 2026-01-06 11:29:14,555 - aiogram.dispatcher - INFO - Start polling
+test-system-bot  | 2026-01-06 11:29:14,873 - aiogram.dispatcher - INFO - Run polling for bot @TestSystemDevBot id=7916943118 - 'TestSystemBot'
+test-system-bot  | 2026-01-06 11:29:22,710 - aiogram.event - INFO - Update id=861005097 is handled. Duration 451 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:29:25,092 - services.api_client - ERROR - Ошибка валидации: 401
+test-system-bot  | 2026-01-06 11:29:25,291 - aiogram.event - INFO - Update id=861005098 is handled. Duration 229 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:29:26,694 - aiogram.event - INFO - Update id=861005099 is handled. Duration 159 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:29:27,950 - services.api_client - INFO - Получен редирект GitHub: https://github.com/login/oauth/authorize?client_id=Ov23liokT4np9bQG3sIT&redirect...
+test-system-bot  | 2026-01-06 11:29:28,412 - aiogram.event - INFO - Update id=861005100 is handled. Duration 466 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:29:34,416 - services.api_client - INFO - Запрос на обмен тикета: http://auth-service:8081/auth/ticket/tk_017a3e46d3c911a4
+test-system-bot  | 2026-01-06 11:29:34,421 - services.api_client - INFO - Токен успешно получен по тикету
+test-system-bot  | 2026-01-06 11:29:34,874 - aiogram.event - INFO - Update id=861005101 is handled. Duration 614 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:29:43,872 - aiogram.event - INFO - Update id=861005102 is handled. Duration 176 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:29:45,185 - aiogram.event - INFO - Update id=861005103 is not handled. Duration 13 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:29:45,185 - aiogram.event - ERROR - Cause exception while process update id=861005103 by bot id=7916943118
+test-system-bot  | NameError: name 'finish_test' is not defined
+test-system-bot  | Traceback (most recent call last):
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 309, in _process_update
+test-system-bot  |     response = await self.feed_update(bot, update, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 158, in feed_update
+test-system-bot  |     response = await self.update.wrap_outer_middleware(
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/middlewares/error.py", line 25, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/middlewares/user_context.py", line 27, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/fsm/middleware.py", line 41, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+test-system-bot  |     return await wrapped_inner(event, kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+test-system-bot  |     return await wrapped()
+test-system-bot  |            ^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 276, in _listen_update
+test-system-bot  |     return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 128, in propagate_event
+test-system-bot  |     return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 123, in _wrapped
+test-system-bot  |     return await self._propagate_event(
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 156, in _propagate_event
+test-system-bot  |     response = await router.propagate_event(update_type=update_type, event=event, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 128, in propagate_event
+test-system-bot  |     return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 123, in _wrapped
+test-system-bot  |     return await self._propagate_event(
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 148, in _propagate_event
+test-system-bot  |     response = await observer.trigger(event, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+test-system-bot  |     return await wrapped_inner(event, kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+test-system-bot  |     return await wrapped()
+test-system-bot  |            ^^^^^^^^^^^^^^^
+test-system-bot  |   File "/app/handlers/tests.py", line 79, in start_test
+test-system-bot  |     await show_question(callback.message, state)
+test-system-bot  |   File "/app/handlers/tests.py", line 90, in show_question
+test-system-bot  |     await finish_test(message, state)
+test-system-bot  |           ^^^^^^^^^^^
+test-system-bot  | NameError: name 'finish_test' is not defined
+test-system-bot  | 2026-01-06 11:29:45,450 - aiogram.event - INFO - Update id=861005104 is not handled. Duration 8 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:29:45,451 - aiogram.event - ERROR - Cause exception while process update id=861005104 by bot id=7916943118
+test-system-bot  | NameError: name 'finish_test' is not defined
+test-system-bot  | Traceback (most recent call last):
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 309, in _process_update
+test-system-bot  |     response = await self.feed_update(bot, update, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 158, in feed_update
+test-system-bot  |     response = await self.update.wrap_outer_middleware(
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/middlewares/error.py", line 25, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/middlewares/user_context.py", line 27, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/fsm/middleware.py", line 41, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+test-system-bot  |     return await wrapped_inner(event, kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+test-system-bot  |     return await wrapped()
+test-system-bot  |            ^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 276, in _listen_update
+test-system-bot  |     return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 128, in propagate_event
+test-system-bot  |     return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 123, in _wrapped
+test-system-bot  |     return await self._propagate_event(
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 156, in _propagate_event
+test-system-bot  |     response = await router.propagate_event(update_type=update_type, event=event, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 128, in propagate_event
+test-system-bot  |     return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 123, in _wrapped
+test-system-bot  |     return await self._propagate_event(
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 148, in _propagate_event
+test-system-bot  |     response = await observer.trigger(event, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+test-system-bot  |     return await wrapped_inner(event, kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+test-system-bot  |     return await wrapped()
+test-system-bot  |            ^^^^^^^^^^^^^^^
+test-system-bot  |   File "/app/handlers/tests.py", line 79, in start_test
+test-system-bot  |     await show_question(callback.message, state)
+test-system-bot  |   File "/app/handlers/tests.py", line 90, in show_question
+test-system-bot  |     await finish_test(message, state)
+test-system-bot  |           ^^^^^^^^^^^
+test-system-bot  | NameError: name 'finish_test' is not defined
+test-system-bot  | 2026-01-06 11:29:45,792 - aiogram.event - INFO - Update id=861005105 is not handled. Duration 10 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:29:45,792 - aiogram.event - ERROR - Cause exception while process update id=861005105 by bot id=7916943118
+test-system-bot  | NameError: name 'finish_test' is not defined
+test-system-bot  | Traceback (most recent call last):
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 309, in _process_update
+test-system-bot  |     response = await self.feed_update(bot, update, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 158, in feed_update
+test-system-bot  |     response = await self.update.wrap_outer_middleware(
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/middlewares/error.py", line 25, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/middlewares/user_context.py", line 27, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/fsm/middleware.py", line 41, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+test-system-bot  |     return await wrapped_inner(event, kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+test-system-bot  |     return await wrapped()
+test-system-bot  |            ^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 276, in _listen_update
+test-system-bot  |     return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 128, in propagate_event
+test-system-bot  |     return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 123, in _wrapped
+test-system-bot  |     return await self._propagate_event(
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 156, in _propagate_event
+test-system-bot  |     response = await router.propagate_event(update_type=update_type, event=event, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 128, in propagate_event
+test-system-bot  |     return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 123, in _wrapped
+test-system-bot  |     return await self._propagate_event(
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 148, in _propagate_event
+test-system-bot  |     response = await observer.trigger(event, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+test-system-bot  |     return await wrapped_inner(event, kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+test-system-bot  |     return await wrapped()
+test-system-bot  |            ^^^^^^^^^^^^^^^
+test-system-bot  |   File "/app/handlers/tests.py", line 79, in start_test
+test-system-bot  |     await show_question(callback.message, state)
+test-system-bot  |   File "/app/handlers/tests.py", line 90, in show_question
+test-system-bot  |     await finish_test(message, state)
+test-system-bot  |           ^^^^^^^^^^^
+test-system-bot  | NameError: name 'finish_test' is not defined
+test-system-bot  | 2026-01-06 11:29:48,046 - aiogram.event - INFO - Update id=861005106 is not handled. Duration 9 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:29:48,046 - aiogram.event - ERROR - Cause exception while process update id=861005106 by bot id=7916943118
+test-system-bot  | NameError: name 'finish_test' is not defined
+test-system-bot  | Traceback (most recent call last):
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 309, in _process_update
+test-system-bot  |     response = await self.feed_update(bot, update, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 158, in feed_update
+test-system-bot  |     response = await self.update.wrap_outer_middleware(
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/middlewares/error.py", line 25, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/middlewares/user_context.py", line 27, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/fsm/middleware.py", line 41, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+test-system-bot  |     return await wrapped_inner(event, kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+test-system-bot  |     return await wrapped()
+test-system-bot  |            ^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 276, in _listen_update
+test-system-bot  |     return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 128, in propagate_event
+test-system-bot  |     return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 123, in _wrapped
+test-system-bot  |     return await self._propagate_event(
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 156, in _propagate_event
+test-system-bot  |     response = await router.propagate_event(update_type=update_type, event=event, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 128, in propagate_event
+test-system-bot  |     return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 123, in _wrapped
+test-system-bot  |     return await self._propagate_event(
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 148, in _propagate_event
+test-system-bot  |     response = await observer.trigger(event, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+test-system-bot  |     return await wrapped_inner(event, kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+test-system-bot  |     return await wrapped()
+test-system-bot  |            ^^^^^^^^^^^^^^^
+test-system-bot  |   File "/app/handlers/tests.py", line 79, in start_test
+test-system-bot  |     await show_question(callback.message, state)
+test-system-bot  |   File "/app/handlers/tests.py", line 90, in show_question
+test-system-bot  |     await finish_test(message, state)
+test-system-bot  |           ^^^^^^^^^^^
+test-system-bot  | NameError: name 'finish_test' is not defined
+test-system-bot  | 2026-01-06 11:29:48,313 - aiogram.event - INFO - Update id=861005107 is not handled. Duration 15 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:29:48,313 - aiogram.event - ERROR - Cause exception while process update id=861005107 by bot id=7916943118
+test-system-bot  | NameError: name 'finish_test' is not defined
+test-system-bot  | Traceback (most recent call last):
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 309, in _process_update
+test-system-bot  |     response = await self.feed_update(bot, update, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 158, in feed_update
+test-system-bot  |     response = await self.update.wrap_outer_middleware(
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/middlewares/error.py", line 25, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/middlewares/user_context.py", line 27, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/fsm/middleware.py", line 41, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+test-system-bot  |     return await wrapped_inner(event, kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+test-system-bot  |     return await wrapped()
+test-system-bot  |            ^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 276, in _listen_update
+test-system-bot  |     return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 128, in propagate_event
+test-system-bot  |     return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 123, in _wrapped
+test-system-bot  |     return await self._propagate_event(
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 156, in _propagate_event
+test-system-bot  |     response = await router.propagate_event(update_type=update_type, event=event, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 128, in propagate_event
+test-system-bot  |     return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 123, in _wrapped
+test-system-bot  |     return await self._propagate_event(
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 148, in _propagate_event
+test-system-bot  |     response = await observer.trigger(event, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+test-system-bot  |     return await wrapped_inner(event, kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+test-system-bot  |     return await wrapped()
+test-system-bot  |            ^^^^^^^^^^^^^^^
+test-system-bot  |   File "/app/handlers/tests.py", line 79, in start_test
+test-system-bot  |     await show_question(callback.message, state)
+test-system-bot  |   File "/app/handlers/tests.py", line 90, in show_question
+test-system-bot  |     await finish_test(message, state)
+test-system-bot  |           ^^^^^^^^^^^
+test-system-bot  | NameError: name 'finish_test' is not defined
+test-system-bot  | 2026-01-06 11:29:52,280 - aiogram.event - INFO - Update id=861005108 is not handled. Duration 11 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:29:52,280 - aiogram.event - ERROR - Cause exception while process update id=861005108 by bot id=7916943118
+test-system-bot  | NameError: name 'finish_test' is not defined
+test-system-bot  | Traceback (most recent call last):
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 309, in _process_update
+test-system-bot  |     response = await self.feed_update(bot, update, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 158, in feed_update
+test-system-bot  |     response = await self.update.wrap_outer_middleware(
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/middlewares/error.py", line 25, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/middlewares/user_context.py", line 27, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/fsm/middleware.py", line 41, in __call__
+test-system-bot  |     return await handler(event, data)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+test-system-bot  |     return await wrapped_inner(event, kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+test-system-bot  |     return await wrapped()
+test-system-bot  |            ^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/dispatcher.py", line 276, in _listen_update
+test-system-bot  |     return await self.propagate_event(update_type=update_type, event=event, **kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 128, in propagate_event
+test-system-bot  |     return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 123, in _wrapped
+test-system-bot  |     return await self._propagate_event(
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 156, in _propagate_event
+test-system-bot  |     response = await router.propagate_event(update_type=update_type, event=event, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 128, in propagate_event
+test-system-bot  |     return await observer.wrap_outer_middleware(_wrapped, event=event, data=kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 123, in _wrapped
+test-system-bot  |     return await self._propagate_event(
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/router.py", line 148, in _propagate_event
+test-system-bot  |     response = await observer.trigger(event, **kwargs)
+test-system-bot  |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/telegram.py", line 121, in trigger
+test-system-bot  |     return await wrapped_inner(event, kwargs)
+test-system-bot  |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test-system-bot  |   File "/usr/local/lib/python3.11/site-packages/aiogram/dispatcher/event/handler.py", line 43, in call
+test-system-bot  |     return await wrapped()
+test-system-bot  |            ^^^^^^^^^^^^^^^
+test-system-bot  |   File "/app/handlers/tests.py", line 79, in start_test
+test-system-bot  |     await show_question(callback.message, state)
+test-system-bot  |   File "/app/handlers/tests.py", line 90, in show_question
+test-system-bot  |     await finish_test(message, state)
+test-system-bot  |           ^^^^^^^^^^^
+test-system-bot  | NameError: name 'finish_test' is not defined
+test-system-bot  | 2026-01-06 11:48:31,767 - aiogram.event - INFO - Update id=861005109 is handled. Duration 431 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:48:33,040 - services.api_client - ERROR - Ошибка валидации: 401
+test-system-bot  | 2026-01-06 11:48:33,192 - aiogram.event - INFO - Update id=861005110 is handled. Duration 165 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:48:34,829 - services.api_client - INFO - Получен редирект GitHub: https://github.com/login/oauth/authorize?client_id=Ov23liokT4np9bQG3sIT&redirect...
+test-system-bot  | 2026-01-06 11:48:35,267 - aiogram.event - INFO - Update id=861005111 is handled. Duration 441 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:48:42,505 - services.api_client - INFO - Запрос на обмен тикета: http://auth-service:8081/auth/ticket/tk_50914287629b0dc6
+test-system-bot  | 2026-01-06 11:48:42,507 - services.api_client - INFO - Токен успешно получен по тикету
+test-system-bot  | 2026-01-06 11:48:42,808 - aiogram.event - INFO - Update id=861005112 is handled. Duration 450 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:48:56,898 - aiogram.event - INFO - Update id=861005113 is handled. Duration 160 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:48:58,944 - aiogram.event - INFO - Update id=861005114 is handled. Duration 176 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:01,511 - aiogram.event - INFO - Update id=861005115 is handled. Duration 156 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:04,050 - aiogram.event - INFO - Update id=861005116 is not handled. Duration 3 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:06,251 - aiogram.event - INFO - Update id=861005117 is not handled. Duration 3 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:06,588 - aiogram.event - INFO - Update id=861005118 is not handled. Duration 3 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:06,894 - aiogram.event - INFO - Update id=861005119 is not handled. Duration 3 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:07,726 - aiogram.event - INFO - Update id=861005120 is not handled. Duration 1 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:07,957 - aiogram.event - INFO - Update id=861005121 is not handled. Duration 2 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:08,115 - aiogram.event - INFO - Update id=861005122 is not handled. Duration 2 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:11,765 - aiogram.event - INFO - Update id=861005123 is not handled. Duration 3 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:12,029 - aiogram.event - INFO - Update id=861005124 is not handled. Duration 4 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:12,521 - aiogram.event - INFO - Update id=861005125 is not handled. Duration 2 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:12,656 - aiogram.event - INFO - Update id=861005126 is not handled. Duration 4 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:12,807 - aiogram.event - INFO - Update id=861005127 is not handled. Duration 2 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:17,294 - aiogram.event - INFO - Update id=861005128 is not handled. Duration 3 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:17,432 - aiogram.event - INFO - Update id=861005129 is not handled. Duration 8 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:17,434 - aiogram.event - INFO - Update id=861005130 is not handled. Duration 10 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:17,652 - aiogram.event - INFO - Update id=861005131 is not handled. Duration 2 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:17,798 - aiogram.event - INFO - Update id=861005132 is not handled. Duration 6 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:23,286 - aiogram.event - INFO - Update id=861005133 is not handled. Duration 2 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:23,419 - aiogram.event - INFO - Update id=861005134 is not handled. Duration 3 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:23,549 - aiogram.event - INFO - Update id=861005135 is not handled. Duration 3 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:23,830 - aiogram.event - INFO - Update id=861005136 is not handled. Duration 3 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:23,955 - aiogram.event - INFO - Update id=861005137 is not handled. Duration 3 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:28,412 - aiogram.event - INFO - Update id=861005138 is not handled. Duration 2 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:29,304 - aiogram.event - INFO - Update id=861005139 is not handled. Duration 7 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:29,304 - aiogram.event - INFO - Update id=861005140 is not handled. Duration 7 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:29,306 - aiogram.event - INFO - Update id=861005141 is not handled. Duration 9 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:29,421 - aiogram.event - INFO - Update id=861005142 is not handled. Duration 1 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:34,270 - aiogram.event - INFO - Update id=861005143 is not handled. Duration 2 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:34,465 - aiogram.event - INFO - Update id=861005144 is not handled. Duration 5 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:34,465 - aiogram.event - INFO - Update id=861005145 is not handled. Duration 4 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:34,587 - aiogram.event - INFO - Update id=861005146 is not handled. Duration 3 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:34,716 - aiogram.event - INFO - Update id=861005147 is not handled. Duration 5 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:40,777 - aiogram.event - INFO - Update id=861005148 is not handled. Duration 4 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:40,777 - aiogram.event - INFO - Update id=861005149 is not handled. Duration 4 ms by bot id=7916943118
+test-system-bot  | 2026-01-06 11:49:41,089 - aiogram.event - INFO - Update id=861005150 is not handled. Duration 2 ms by bot id=7916943118

@@ -20,25 +20,19 @@ class AuthStates(StatesGroup):
 @router.message(Command("login"))
 async def cmd_login(message: types.Message):
     """Команда для входа через OAuth"""
-    user_id = message.from_user.id  #
-    # Проверяем, уже авторизован ли пользователь
-    token = await redis_client.get_access_token(message.from_user.id)
+    # Исправлено: получаем сессию, а не просто токен
+    session = await redis_client.get_user_session(message.from_user.id)
+    token = session.get("access_token") if session else None
 
     if token:
-        # Проверяем валидность токена
         validation = await api_client.validate_token(token)
         if validation.get("valid"):
             await message.answer(
                 "✅ Вы уже авторизованы!\n"
-                "Используйте /tests для просмотра доступных тестов.\n"
-                "Или /profile для просмотра профиля."
+                "Используйте /tests для просмотра доступных тестов."
             )
             return
-        else:
-            # Токен невалиден, удаляем
-            await redis_client.get_access_token(message.from_user.id)
 
-    # Предлагаем способы авторизации
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(text="🔵 Яндекс", callback_data="auth_yandex"),
@@ -47,10 +41,7 @@ async def cmd_login(message: types.Message):
     ])
 
     await message.answer(
-        "🔐 *Авторизация через OAuth*\n\n"
-        "Для доступа ко всем функциям бота необходимо авторизоваться.\n"
-        "Выберите способ входа:\n\n"
-        "⚠️ *Внимание:* После авторизации вы будете перенаправлены обратно в бота с токеном.",
+        "🔐 *Авторизация через OAuth*\n\nВыберите способ входа:",
         reply_markup=keyboard,
         parse_mode="Markdown"
     )
@@ -114,50 +105,11 @@ async def auth_github(callback: types.CallbackQuery, state: FSMContext):
 
 @router.message(Command("start"))
 async def handle_deep_link(message: types.Message):
-    """Обработка deep link с токеном (t.me/bot?start=token)"""
-    # Проверяем, есть ли токен в команде /start
-    if len(message.text.split()) > 1:
-        token = message.text.split()[1]  # /start <token>
-
-        # Проверяем валидность токена
-        validation = await api_client.validate_token(token)
-
-        if validation.get("valid"):
-            # Сохраняем токен в Redis
-            await redis_client.set(
-                f"user:{message.from_user.id}:token",
-                token,
-                ex=3600  # 1 час (обычное время жизни access token)
-            )
-
-            # Получаем профиль пользователя
-            profile = await api_client.get_user_profile(token)
-
-            if "user" in profile:
-                user_info = profile["user"]
-                await message.answer(
-                    f"✅ *Авторизация успешна!*\n\n"
-                    f"👤 *Пользователь:* {user_info.get('full_name', 'Неизвестно')}\n"
-                    f"📧 *Email:* {user_info.get('email', 'Не указан')}\n"
-                    f"🎓 *Роль:* {user_info.get('role', 'student')}\n\n"
-                    f"Теперь вам доступны все функции бота!",
-                    parse_mode="Markdown"
-                )
-            else:
-                await message.answer(
-                    "✅ *Авторизация успешна!*\n\n"
-                    "Токен сохранен. Теперь вам доступны все функции бота!",
-                    parse_mode="Markdown"
-                )
-        else:
-            await message.answer(
-                "❌ *Недействительный токен*\n\n"
-                "Токен устарел или недействителен.\n"
-                "Попробуйте авторизоваться снова через /login",
-                parse_mode="Markdown"
-            )
-    else:
-        # Обычный /start без токена
+    """Обработка deep link (t.me/bot?start=tk...)"""
+    args = message.text.split()
+    
+    # 1. Если просто /start без параметров
+    if len(args) <= 1:
         await message.answer(
             "🤖 *Добро пожаловать!*\n\n"
             "Используйте /login для авторизации\n"
@@ -165,71 +117,89 @@ async def handle_deep_link(message: types.Message):
             "/profile для вашего профиля",
             parse_mode="Markdown"
         )
+        return
 
+    payload = args[1]
+    token = None
+
+    # 2. Если пришел ТИКЕТ (начинается на tk)
+    if payload.startswith("tk"):
+        msg = await message.answer("⏳ *Авторизация...* Пожалуйста, подождите.", parse_mode="Markdown")
+        # ОБМЕНИВАЕМ ТИКЕТ НА ТОКЕН
+        token = await api_client.exchange_ticket(payload)
+        await msg.delete()
+    else:
+        # Если вдруг пришел сразу JWT (старая логика)
+        token = payload
+
+    if not token:
+        await message.answer(
+            "❌ *Ошибка авторизации*\n\n"
+            "Ссылка устарела или недействительна. Попробуйте войти снова через /login",
+            parse_mode="Markdown"
+        )
+        return
+
+    # 3. Валидируем полученный токен
+    validation = await api_client.validate_token(token)
+
+    if validation.get("valid"):
+        session_data = {"access_token": token}
+        await redis_client.set_user_session(message.from_user.id, session_data)
+
+        # Пытаемся получить данные профиля
+        profile = await api_client.get_user_profile(token)
+        
+        # В твоем Go-сервисе данные лежат в ключе "data" (судя по Me обработчику)
+        user_info = profile.get("data", {}) if profile.get("success") else {}
+
+        await message.answer(
+            f"✅ *Авторизация успешна!*\n\n"
+            f"👤 *Пользователь:* {user_info.get('email', 'Пользователь')}\n"
+            f"🎓 *Роль:* {user_info.get('role', 'student')}\n\n"
+            f"Теперь вам доступны все функции бота!",
+            parse_mode="Markdown"
+        )
+    else:
+        await message.answer("❌ Сервер отклонил токен. Попробуйте /login еще раз.")
 
 @router.message(Command("profile"))
 async def cmd_profile(message: types.Message):
     """Показать профиль пользователя"""
-    user_id = message.from_user.id  #
-    token = await redis_client.get_access_token(message.from_user.id)
+    session = await redis_client.get_user_session(message.from_user.id)
+    token = session.get("access_token") if session else None
 
     if not token:
-        await message.answer(
-            "❌ *Вы не авторизованы*\n\n"
-            "Используйте /login для входа в систему.",
-            parse_mode="Markdown"
-        )
+        await message.answer("❌ Вы не авторизованы.")
         return
 
-    # Проверяем валидность токена
     validation = await api_client.validate_token(token)
     if not validation.get("valid"):
-        await message.answer(
-            "❌ *Токен устарел*\n\n"
-            "Используйте /login для повторной авторизации.",
-            parse_mode="Markdown"
-        )
-        await redis_client.get_access_token(message.from_user.id)
+        # Исправлено: имя метода в redis_client.py -> delete_user_session
+        await redis_client.delete_user_session(message.from_user.id)
+        await message.answer("❌ *Сессия истекла*. Войдите снова через /login")
         return
 
-    # Получаем профиль
     profile = await api_client.get_user_profile(token)
-
-    if "user" in profile:
-        user_info = profile["user"]
+    if profile.get("success") and "data" in profile:
+        user_info = profile["data"]
         await message.answer(
             f"👤 *Ваш профиль*\n\n"
-            f"🆔 *ID:* {user_info.get('id', 'Неизвестно')}\n"
-            f"📛 *Имя:* {user_info.get('full_name', 'Не указано')}\n"
-            f"📧 *Email:* {user_info.get('email', 'Не указан')}\n"
-            f"🎓 *Роль:* {user_info.get('role', 'student')}\n\n"
-            f"📊 *Статус:* ✅ Авторизован",
+            f"📧 *Email:* {user_info.get('email')}\n"
+            f"🎓 *Роль:* {user_info.get('role')}",
             parse_mode="Markdown"
         )
     else:
-        await message.answer(
-            "❌ *Ошибка получения профиля*\n\n"
-            "Не удалось получить информацию о пользователе.",
-            parse_mode="Markdown"
-        )
+        await message.answer("❌ Ошибка получения профиля")
 
 
 @router.message(Command("logout"))
 async def cmd_logout(message: types.Message):
     """Выйти из системы"""
-    user_id = message.from_user.id  #
-    token = await redis_client.get_access_token(message.from_user.id)
-
-    if token:
-        await redis_client.get_access_token(message.from_user.id)
-        await message.answer(
-            "✅ *Вы успешно вышли из системы*\n\n"
-            "Ваш токен удален. Для доступа к функциям бота снова используйте /login",
-            parse_mode="Markdown"
-        )
+    # Исправлено: имя метода в redis_client.py -> delete_user_session
+    success = await redis_client.delete_user_session(message.from_user.id)
+    
+    if success:
+        await message.answer("✅ *Вы успешно вышли из системы*", parse_mode="Markdown")
     else:
-        await message.answer(
-            "ℹ️ *Вы не авторизованы*\n\n"
-            "Используйте /login для входа в систему.",
-            parse_mode="Markdown"
-        )
+        await message.answer("ℹ️ Вы и так не авторизованы.")

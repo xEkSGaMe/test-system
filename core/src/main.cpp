@@ -275,7 +275,7 @@ std::string handle_request(const std::string& full_request,
 
     // ---------- TESTS ----------
     if (method == "GET" && path == "/tests") {
-        auto tests = testService.list();
+        auto tests = testService.getAllTests();
         std::stringstream ss;
         ss << "[";
         bool first = true;
@@ -289,11 +289,43 @@ std::string handle_request(const std::string& full_request,
         response_body = ss.str();
     }
     else if (method == "GET" && extract_id_from_path(path, "/tests/")) {
-        int test_id = extract_id_from_path(path, "/tests/").value();
-        auto test = testService.get(test_id);
-        if (test) { status_line = "HTTP/1.1 200 OK"; response_body = testToJson(*test); }
-        else { status_line = "HTTP/1.1 404 Not Found"; response_body = "{\"message\":\"Test not found\"}"; }
+    int test_id = extract_id_from_path(path, "/tests/").value();
+    auto test = testService.get(test_id);
+    
+    if (test) {
+        status_line = "HTTP/1.1 200 OK";
+        
+        // Начинаем собирать JSON вручную или через nlohmann::json
+        nlohmann::json res_json;
+        res_json["id"] = test->id;
+        res_json["title"] = test->title;
+        res_json["description"] = test->description.value_or("");
+        
+        // 1. Загружаем вопросы
+        auto questions = questionService.list_by_test(test_id); // Используем существующий метод из строки 325
+        res_json["questions"] = nlohmann::json::array();
+        
+        for (const auto& q : questions) {
+            nlohmann::json q_json;
+            q_json["id"] = q.id;
+            q_json["text"] = q.text;
+            
+            // 2. Загружаем варианты ответов для каждого вопроса
+            auto answers = answerService.list_by_question(q.id); // Используем метод из строки 346
+            std::vector<std::string> options;
+            for (const auto& a : answers) {
+                options.push_back(a.text);
+            }
+            q_json["options"] = options;
+            res_json["questions"].push_back(q_json);
+        }
+        
+        response_body = res_json.dump();
+    } else {
+        status_line = "HTTP/1.1 404 Not Found";
+        response_body = "{\"message\":\"Test not found\"}";
     }
+}
     else if (method == "POST" && path == "/tests") {
     // Проверяем, что пользователь авторизован и имеет роль admin или teacher
     if (!require_role({"admin", "teacher"})) {

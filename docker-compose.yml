@@ -74,6 +74,24 @@ services:
       - test-network
     restart: unless-stopped
 
+  web-client:
+    build:
+      context: ./web-client
+    container_name: test-system-web
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - VITE_API_URL=http://localhost:8080
+      - VITE_AUTH_URL=http://localhost:8081
+    depends_on:
+      - auth-service
+      - core-service
+    networks:
+      - test-network
+    restart: unless-stopped
+
   # Telegram Бот (Python)
   bot:
     build:
@@ -82,11 +100,11 @@ services:
     env_file:
       - .env
     environment:
-      - BOT_TOKEN=${BOT_TOKEN}
-      - AUTH_API_URL=http://auth-service:8081
-      - CORE_API_URL=http://core-service:8080
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
+      BOT_TOKEN: ${BOT_TOKEN}
+      AUTH_API_URL: http://auth-service:8081
+      CORE_API_URL: http://core-service:8080
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     depends_on:
       - auth-service
       - core-service

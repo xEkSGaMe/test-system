@@ -59,3 +59,8 @@ func (rm *RedisManager) IsTokenBlacklisted(ctx context.Context, token string) (b
 func (rm *RedisManager) Close() error {
 	return rm.client.Close()
 }
+
+// Client возвращает прямой доступ к redis.Client для использования в сервисах
+func (rm *RedisManager) Client() *redis.Client {
+    return rm.client
+}

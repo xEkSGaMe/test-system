@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"net/http"
 	"strings"
 
@@ -21,24 +23,20 @@ func NewAuthHandler(authService *services.AuthService, oauthService *services.OA
 	}
 }
 
-// YandexLogin godoc
-// @Summary Login with Yandex
-// @Description Redirects user to Yandex OAuth2 login page
-// @Tags auth
-// @Success 307
-// @Router /auth/yandex/login [get]
+// Вспомогательная функция для генерации короткого кода
+func generateTicket() string {
+	b := make([]byte, 8)
+	rand.Read(b)
+	return "tk_" + hex.EncodeToString(b)
+}
+
+// YandexLogin
 func (h *AuthHandler) YandexLogin(c *gin.Context) {
 	url := h.oauthService.GetYandexAuthURL()
 	c.Redirect(http.StatusTemporaryRedirect, url)
 }
 
-// YandexCallback godoc
-// @Summary Yandex OAuth2 Callback
-// @Description Handles Yandex redirection, creates user if not exists and redirects to Telegram Bot
-// @Tags auth
-// @Param code query string true "OAuth2 Code"
-// @Success 302
-// @Router /auth/yandex/callback [get]
+// YandexCallback
 func (h *AuthHandler) YandexCallback(c *gin.Context) {
 	code := c.Query("code")
 	if code == "" {
@@ -48,29 +46,73 @@ func (h *AuthHandler) YandexCallback(c *gin.Context) {
 
 	_, tokens, err := h.oauthService.HandleYandexCallback(c.Request.Context(), code)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to authenticate with Yandex: " + err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to authenticate: " + err.Error()})
 		return
 	}
 
-	// Ссылка на бота с токеном для deep-linking
-	// Используем AccessToken, чтобы бот сразу его подхватил через команду /start
-	tgRedirect := "https://t.me/TestSystemDevBot?start=" + tokens.AccessToken
-	
-	// Перенаправляем пользователя
+	// Создаем тикет и сохраняем его в Redis на 2 минуты
+	ticket := generateTicket()
+	err = h.authService.StoreTicket(c.Request.Context(), ticket, tokens.AccessToken)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to store ticket"})
+		return
+	}
+
+	// Отправляем в бота короткий код
+	tgRedirect := "https://t.me/TestSystemDevBot?start=" + ticket
 	c.Redirect(http.StatusFound, tgRedirect)
 }
 
-// Register godoc
-// @Summary Register a new user
-// @Description Creates a new user account and returns tokens
-// @Tags auth
-// @Accept json
-// @Produce json
-// @Param request body models.CreateUserRequest true "Registration Info"
-// @Success 201 {object} map[string]interface{}
-// @Failure 400 {object} map[string]string
-// @Failure 409 {object} map[string]string
-// @Router /auth/register [post]
+// GitHubLogin
+func (h *AuthHandler) GitHubLogin(c *gin.Context) {
+	url := h.oauthService.GetGitHubAuthURL()
+	c.Redirect(http.StatusTemporaryRedirect, url)
+}
+
+// GitHubCallback
+func (h *AuthHandler) GitHubCallback(c *gin.Context) {
+	code := c.Query("code")
+	if code == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Code is required"})
+		return
+	}
+
+	_, pair, err := h.oauthService.HandleGitHubCallback(c.Request.Context(), code)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Создаем тикет
+	ticket := generateTicket()
+	err = h.authService.StoreTicket(c.Request.Context(), ticket, pair.AccessToken)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to store ticket"})
+		return
+	}
+
+	c.Redirect(http.StatusFound, "https://t.me/TestSystemDevBot?start="+ticket)
+}
+
+// ExchangeTicket — новый метод, который вызывает бот
+func (h *AuthHandler) ExchangeTicket(c *gin.Context) {
+	ticket := c.Param("ticket")
+	if ticket == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Ticket is required"})
+		return
+	}
+
+	// Получаем токен из Redis и тут же удаляем его (одноразовое использование)
+	token, err := h.authService.GetTokenByTicket(c.Request.Context(), ticket)
+	if err != nil || token == "" {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Ticket expired or invalid"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"token": token})
+}
+
+// Register
 func (h *AuthHandler) Register(c *gin.Context) {
 	var req models.CreateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -87,17 +129,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"user": user, "auth": tokens})
 }
 
-// Login godoc
-// @Summary User Login
-// @Description Authenticates user and returns access and refresh tokens
-// @Tags auth
-// @Accept json
-// @Produce json
-// @Param request body models.LoginRequest true "Login Credentials"
-// @Success 200 {object} map[string]interface{}
-// @Failure 400 {object} map[string]string
-// @Failure 401 {object} map[string]string
-// @Router /auth/login [post]
+// Login
 func (h *AuthHandler) Login(c *gin.Context) {
 	var req models.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -114,14 +146,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"user": user, "auth": tokens})
 }
 
-// Logout godoc
-// @Summary User Logout
-// @Description Invalidates the current access token by adding it to blacklist
-// @Tags auth
-// @Security BearerAuth
-// @Success 200 {object} map[string]string
-// @Failure 400 {object} map[string]string
-// @Router /auth/logout [post]
+// Logout
 func (h *AuthHandler) Logout(c *gin.Context) {
 	token := extractToken(c)
 	if token == "" {
@@ -133,14 +158,7 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Successfully logged out"})
 }
 
-// Validate godoc
-// @Summary Validate JWT Token
-// @Description Checks if the provided token is valid and returns its claims
-// @Tags auth
-// @Param Authorization header string true "Bearer <token>"
-// @Success 200 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Router /auth/validate [get]
+// Validate
 func (h *AuthHandler) Validate(c *gin.Context) {
 	token := extractToken(c)
 	claims, err := h.authService.ValidateToken(c.Request.Context(), token)
@@ -152,17 +170,7 @@ func (h *AuthHandler) Validate(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"valid": true, "claims": claims})
 }
 
-// Refresh godoc
-// @Summary Refresh Access Token
-// @Description Uses a refresh token to obtain a new pair of tokens
-// @Tags auth
-// @Accept json
-// @Produce json
-// @Param request body RefreshRequest true "Refresh Token"
-// @Success 200 {object} map[string]interface{}
-// @Failure 400 {object} map[string]string
-// @Failure 401 {object} map[string]string
-// @Router /auth/refresh [post]
+// Refresh
 func (h *AuthHandler) Refresh(c *gin.Context) {
 	var req RefreshRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -177,14 +185,7 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"auth": pair})
 }
 
-// Me godoc
-// @Summary Get Current User Info
-// @Description Returns info about the user associated with the provided JWT
-// @Tags auth
-// @Security BearerAuth
-// @Success 200 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Router /auth/me [get]
+// Me
 func (h *AuthHandler) Me(c *gin.Context) {
 	token := extractToken(c)
 	claims, err := h.authService.ValidateToken(c.Request.Context(), token)
@@ -201,40 +202,6 @@ func (h *AuthHandler) Me(c *gin.Context) {
 			"role":  claims.Role,
 		},
 	})
-}
-
-// GitHubLogin godoc
-// @Summary Login with GitHub
-// @Tags auth
-// @Router /auth/github/login [get]
-func (h *AuthHandler) GitHubLogin(c *gin.Context) {
-	url := h.oauthService.GetGitHubAuthURL()
-	c.Redirect(http.StatusTemporaryRedirect, url)
-}
-
-// GitHubCallback godoc
-// @Summary GitHub OAuth2 Callback
-// @Description Handles GitHub redirection and redirects to Telegram Bot
-// @Tags auth
-// @Success 302
-// @Router /auth/github/callback [get]
-func (h *AuthHandler) GitHubCallback(c *gin.Context) {
-	code := c.Query("code")
-	if code == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "code is required"})
-		return
-	}
-
-	_, pair, err := h.oauthService.HandleGitHubCallback(c.Request.Context(), code)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Аналогичный редирект для GitHub
-	tgRedirect := "https://t.me/TestSystemDevBot?start=" + pair.AccessToken
-	
-	c.Redirect(http.StatusFound, tgRedirect)
 }
 
 func extractToken(c *gin.Context) string {

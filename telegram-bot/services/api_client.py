@@ -127,6 +127,27 @@ class APIClient:
             logger.error(f"Ошибка получения GitHub ссылки: {e}", exc_info=True)
         return None
 
+    async def exchange_ticket(self, ticket: str) -> str | None:
+        """Обменивает короткий тикет на полноценный JWT токен"""
+        try:
+            session = await self._get_session()
+            url = f"{self.base_url}/auth/ticket/{ticket}"
+            logger.info(f"Запрос на обмен тикета: {url}")
+            
+            async with session.get(url) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    token = data.get("token")
+                    logger.info("Токен успешно получен по тикету")
+                    return token
+                else:
+                    error_data = await response.text()
+                    logger.error(f"Ошибка обмена тикета ({response.status}): {error_data}")
+                    return None
+        except Exception as e:
+            logger.error(f"Исключение при обмене тикета: {e}")
+            return None
+            
     async def validate_token(self, token: str) -> dict:
         """Проверяет валидность JWT токена"""
         try:

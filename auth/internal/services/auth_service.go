@@ -147,6 +147,29 @@ func (s *AuthService) Logout(ctx context.Context, token string) error {
 	return nil
 }
 
+// StoreTicket сохраняет JWT access token в Redis с привязкой к короткому тикету
+func (s *AuthService) StoreTicket(ctx context.Context, ticket string, token string) error {
+    // Используем redisMgr, который уже есть в AuthService
+    // Устанавливаем время жизни 2 минуты (этого хватит, чтобы бот успел забрать токен)
+    return s.redisMgr.Client().Set(ctx, "ticket:"+ticket, token, 2*time.Minute).Err()
+}
+
+// GetTokenByTicket получает токен из Redis и сразу его удаляет
+func (s *AuthService) GetTokenByTicket(ctx context.Context, ticket string) (string, error) {
+    key := "ticket:" + ticket
+    
+    // Получаем токен
+    token, err := s.redisMgr.Client().Get(ctx, key).Result()
+    if err != nil {
+        return "", err
+    }
+
+    // Удаляем тикет сразу после использования (одноразовый код)
+    s.redisMgr.Client().Del(ctx, key)
+    
+    return token, nil
+}
+
 func (s *AuthService) IsTokenBlacklisted(ctx context.Context, token string) (bool, error) {
 	return s.redisMgr.IsTokenBlacklisted(ctx, token)
 }
