@@ -5,7 +5,7 @@
 
 ![Status](https://img.shields.io/badge/🚀-В_разработке-orange)
 ![Team](https://img.shields.io/badge/👥-Команда:5_участников-blue)
-![Day](https://img.shields.io/badge/📅-Спринт_2_из_10-green)
+![Day](https://img.shields.io/badge/📅-Спринт_10_из_10-green)
 ![Issues](https://img.shields.io/github/issues/xEkSGaMe/test-system)
 ![Last Commit](https://img.shields.io/github/last-commit/xEkSGaMe/test-system)
 
@@ -43,3 +43,4 @@ pie title Общий прогресс проекта (100%/100%)
     "Завершено" : 100
     "В работе" : 0
     "В планах" : 0
+
