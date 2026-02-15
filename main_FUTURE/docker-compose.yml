@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: test-system-db
+    environment:
+      POSTGRES_DB: test_system
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - test-network
+
+  mongodb:
+    image: mongo:6
+    container_name: test-system-mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: secret
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
+    networks:
+      - test-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: test-system-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - test-network
+
+  core-api:
+    build: ./core-api
+    container_name: test-system-core-api
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: postgresql://admin:secret@postgres:5432/test_system
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    networks:
+      - test-network
+
+  auth:
+    build: ./auth
+    container_name: test-system-auth
+    ports:
+      - "8081:8081"
+    env_file:
+      - .env
+    depends_on:
+      - mongodb
+      - redis
+    restart: unless-stopped
+    networks:
+      - test-network
+
+volumes:
+  postgres_data:
+  mongodb_data:
+  redis_data:
+
+networks:
+  test-network:
+    driver: bridge
