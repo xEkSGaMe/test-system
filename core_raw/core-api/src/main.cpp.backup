@@ -1,0 +1,22 @@
+#include <iostream>
+#include <string>
+#include <thread>
+#include <chrono>
+
+// Простая заглушка для теста
+int main() {
+    std::cout << "=== Core API Server Starting ===\n";
+    std::cout << "Server will run on port 8080\n";
+    std::cout << "Endpoints:\n";
+    std::cout << "  GET / - Health check\n";
+    std::cout << "  GET /tests - List tests\n";
+    std::cout << "  POST /tests - Create test\n";
+    
+    // Заглушка - просто ждём
+    while(true) {
+        std::this_thread::sleep_for(std::chrono::seconds(10));
+        std::cout << "Server is alive...\n";
+    }
+    
+    return 0;
+}

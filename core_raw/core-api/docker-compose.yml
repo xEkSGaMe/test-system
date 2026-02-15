@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # База данных PostgreSQL
+  db:
+    image: postgres:15
+    container_name: test-system-db
+    environment:
+      POSTGRES_DB: test_system
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Главный модуль (твой)
+  core-api:
+    build: ./core-api
+    container_name: test-system-core
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_URL=postgresql://admin:secret@db:5432/test_system
+      - JWT_SECRET=your-super-secret-jwt-key-change-this
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    volumes:
+      - ./core-api:/app
+      - /app/build
+
+volumes:
+  postgres_data:

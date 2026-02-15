@@ -1,0 +1,11 @@
+﻿build/
+*.o
+*.so
+*.a
+.git/
+.gitignore
+.vscode/
+.idea/
+*.log
+Dockerfile*
+*.backup

@@ -1,0 +1,30 @@
+﻿version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: test-system-db
+    environment:
+      POSTGRES_DB: test_system
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: secret
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5433:5432"  # Используем порт 5433 на хосте, чтобы не конфликтовать
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  core-api:
+    build: ./core-api
+    container_name: test-system-core-api
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: postgresql://admin:secret@postgres:5432/test_system
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
